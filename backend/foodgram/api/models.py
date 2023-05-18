@@ -1,6 +1,5 @@
+from django.core.validators import MinValueValidator, RegexValidator
 from django.db import models
-from django.core.validators import RegexValidator, MinValueValidator
-
 from users.models import User
 
 

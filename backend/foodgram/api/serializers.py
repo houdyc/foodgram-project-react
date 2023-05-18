@@ -1,13 +1,13 @@
-from rest_framework import serializers
-from drf_base64.fields import Base64ImageField
-from django.shortcuts import get_object_or_404
 from django.db import models
-from rest_framework.fields import SerializerMethodField, IntegerField
-from rest_framework.relations import PrimaryKeyRelatedField
+from django.shortcuts import get_object_or_404
+from drf_base64.fields import Base64ImageField
+from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
-
-from .models import Ingredient, Recipe, Tag, IngredientRecipe
+from rest_framework.fields import IntegerField, SerializerMethodField
+from rest_framework.relations import PrimaryKeyRelatedField
 from users.serializers import CustomUserSerializer
+
+from .models import Ingredient, IngredientRecipe, Recipe, Tag
 
 
 class RecipeSerializer(serializers.ModelSerializer):
@@ -107,6 +107,41 @@ class RecipeWriteSerializer(serializers.ModelSerializer):
                 raise ValidationError('Теги не могут повторяться.')
             tags_list.append(tag)
         return obj
+
+    def ingredients_amount(self, ingredients, recipe):
+        IngredientRecipe.objects.bulk_create(
+            [IngredientRecipe(
+                recipe=recipe,
+                ingredient=Ingredient.objects.get(id=ingredient['id']),
+                amount=ingredient['amount'])
+                for ingredient in ingredients
+             ]
+        )
+
+    def create(self, validated_data):
+        ingredient = self.validated_data.pop('ingredient')
+        tag = self.validated_data.pop('tag')
+        recipe = Recipe.objects.create(**validated_data)
+        recipe.tags.set(tag)
+        self.ingredients_amount(recipe=recipe,
+                                ingredients=ingredient)
+        return recipe
+
+    def update(self, instance, validated_data):
+        tags = validated_data.pop('tags')
+        ingredients = validated_data.pop('ingredients')
+        instance.tags.clear()
+        instance.tags.set(tags)
+        instance.ingredients.clear()
+        self.ingredients_amount(recipe=instance,
+                                ingredients=ingredients)
+        return super().update(instance, validated_data)
+
+    def to_representation(self, instance):
+        request = self.context.get('request')
+        context = {'request': request}
+        return RecipeReadSerializer(instance,
+                                    context=context).data
 
 
 class RecipeShortSerializer(serializers.ModelSerializer):

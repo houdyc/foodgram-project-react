@@ -1,23 +1,21 @@
 from datetime import datetime
-from django.shortcuts import get_object_or_404
-from django.http import HttpResponse
+
 from django.db.models import Sum
+from django.http import HttpResponse
+from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
-from rest_framework import status
-from rest_framework import viewsets
-from rest_framework.permissions import SAFE_METHODS, IsAuthenticated
+from rest_framework import status, viewsets
 from rest_framework.decorators import action
+from rest_framework.permissions import SAFE_METHODS, IsAuthenticated
 from rest_framework.response import Response
-
-
-from .models import Tag, Ingredient, Recipe, ShoppingList, IngredientRecipe
-from .filters import IngredientFilter, RecipeFilter
-from .serializers import (TagSerializer, IngredientSerializer,
-                          RecipeSerializer, RecipeWriteSerializer,
-                          RecipeReadSerializer, RecipeShortSerializer)
-
-from users.permissions import IsAdminPermission, IsAuthorPermission
 from users.pagination import CustomPagination
+from users.permissions import IsAdminPermission, IsAuthorPermission
+
+from .filters import IngredientFilter, RecipeFilter
+from .models import Ingredient, IngredientRecipe, Recipe, ShoppingList, Tag
+from .serializers import (IngredientSerializer, RecipeReadSerializer,
+                          RecipeSerializer, RecipeShortSerializer,
+                          RecipeWriteSerializer, TagSerializer)
 
 
 class RecipeViewSet(viewsets.ModelViewSet):
