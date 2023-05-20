@@ -1,18 +1,19 @@
-from datetime import datetime
-
 from django.db.models import Sum
+from django_filters.rest_framework import DjangoFilterBackend
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
-from django_filters.rest_framework import DjangoFilterBackend
+from django.utils import timezone
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
+from rest_framework.exceptions import ValidationError
 from rest_framework.permissions import SAFE_METHODS, IsAuthenticated
 from rest_framework.response import Response
+
 from users.pagination import CustomPagination
 from users.permissions import IsAdminPermission, IsAuthorPermission
-
 from .filters import IngredientFilter, RecipeFilter
-from .models import Ingredient, IngredientRecipe, Recipe, ShoppingList, Tag
+from .models import (Ingredient, IngredientRecipe, Recipe, Tag,
+                     SelectedRecipes, ShoppingList)
 from .serializers import (IngredientSerializer, RecipeReadSerializer,
                           RecipeSerializer, RecipeShortSerializer,
                           RecipeWriteSerializer, TagSerializer)
@@ -40,26 +41,51 @@ class RecipeViewSet(viewsets.ModelViewSet):
         serializer_class=IsAuthenticated
     )
     def selected(self, request, pk):
+        user = self.request.user
+        recipe = get_object_or_404(Recipe, pk=pk)
         if request.method == 'POST':
-            return self.add_to(ShoppingList, request.user, pk)
-        else:
-            return self.delete_from(ShoppingList, request.user, pk)
+            if SelectedRecipes.objects.filter(
+                    user=user, recipe=recipe
+            ).exists():
+                raise ValidationError('Данный пост уже добавлен в избранное.')
+            SelectedRecipes.objects.create(user=user, recipe=recipe)
+            serializer = RecipeShortSerializer
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
 
-    def add_to(self, user, model, pk):
-        if model.objects.filter(user=user, id=pk).exists():
-            return Response('Данный рецепт уже добавлен.',
-                            status=status.HTTP_400_BAD_REQUEST)
-        recipe = get_object_or_404(Recipe, id=pk)
-        model.objects.create(user=user, recipe=recipe)
-        serializer = RecipeShortSerializer(recipe)
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
-
-    def delete_from(self, model, user, pk):
-        if model.objects.filter(user=user, id=pk).exists():
-            model.objects.delete()
+        if request.method == 'DELETE':
+            if not SelectedRecipes.objects.filter(
+                user=user, recipe=recipe
+            ).exists():
+                raise ValidationError('Данный пост не существует в избранном.')
+            selected = get_object_or_404(SelectedRecipes,
+                                         user=user, recipe=recipe)
+            selected.delete()
             return Response(status=status.HTTP_204_NO_CONTENT)
-        return Response('Рецепт уже удален.',
-                        status=status.HTTP_400_BAD_REQUEST)
+        return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
+
+    def shopping_list(self, request, pk):
+        user = self.request.user
+        recipe = get_object_or_404(Recipe, pk=pk)
+
+        if request.method == 'POST':
+            if ShoppingList.objects.filter(user=user, recipe=recipe).exists():
+                raise ValidationError('Данный рецепт уже существует'
+                                      ' в списке покупок')
+            ShoppingList.objects.create(user=user, recipe=recipe)
+            serializer = RecipeShortSerializer
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+        if request.method == 'DELETE':
+            if not ShoppingList.objects.filter(
+                    user=user, recipe=recipe
+            ).exists():
+                raise ValidationError(
+                    'Данный рецепт отсутствует в списке покупок')
+            shop_list = get_object_or_404(ShoppingList,
+                                          user=user, recipe=recipe)
+            shop_list.delete()
+            return Response(status=status.HTTP_204_NO_CONTENT)
+        return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
 
     @action(
         detail=False,
@@ -75,9 +101,9 @@ class RecipeViewSet(viewsets.ModelViewSet):
         ).values(
             'ingredient__name',
             'ingredient__measurement_unit'
-        ).annotate(amount=Sum('amount'))
+        ).annotate(ingredients_amount=Sum('amount'))
 
-        today = datetime.today()
+        today = timezone.localtime(timezone.now())
         shopping_list = (
             f'Список покупок для: {user.get_full_name()}\n\n'
             f'Дата: {today:%Y-%m-%d}\n\n'

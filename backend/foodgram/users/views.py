@@ -37,18 +37,16 @@ class UsersViewSet(UserViewSet):
 
             return Response(serializer.data, status=status.HTTP_201_CREATED)
 
-        if self.request.method == 'DELETE':
-            if not Follow.objects.filter(
-                user=user,
-                author=author,
-            ).exists():
-                raise exceptions.ValidationError('Подписка не существует.')
+        if not Follow.objects.filter(
+            user=user,
+            author=author,
+        ).exists():
+            raise exceptions.ValidationError('Подписка не существует.')
 
-            follow = get_object_or_404(Follow, user=user, author=author)
-            follow.delete()
+        follow = get_object_or_404(Follow, user=user, author=author)
+        follow.delete()
 
-            return Response(status=status.HTTP_204_NO_CONTENT)
-        return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
     @action(
         detail=False,
@@ -58,8 +56,7 @@ class UsersViewSet(UserViewSet):
     )
     def follows(self, request):
         user = self.request.user
-        follow_list = user.follow.all()
-        authors = [item.author.id for item in follow_list]
+        authors = user.objects.values('author', 'follow')
         queryset = User.objects.filter(pk__in=authors)
         paginated_queryset = self.paginate_queryset(queryset)
         serializer = self.get_serializer(paginated_queryset, many=True)

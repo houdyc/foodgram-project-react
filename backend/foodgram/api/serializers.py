@@ -2,11 +2,10 @@ from django.db import models
 from django.shortcuts import get_object_or_404
 from drf_base64.fields import Base64ImageField
 from rest_framework import serializers
-from rest_framework.exceptions import ValidationError
 from rest_framework.fields import IntegerField, SerializerMethodField
 from rest_framework.relations import PrimaryKeyRelatedField
-from users.serializers import CustomUserSerializer
 
+from users.serializers import CustomUserSerializer
 from .models import Ingredient, IngredientRecipe, Recipe, Tag
 
 
@@ -59,7 +58,7 @@ class RecipeReadSerializer(serializers.ModelSerializer):
         user = self.context.get('request').user
         if user.is_anonymous:
             return False
-        return user.favorites.filter(recipe=obj).exists()
+        return user.selected.filter(recipe=obj).exists()
 
     def get_shopped(self, obj):
         user = self.context.get('request').user
@@ -87,24 +86,28 @@ class RecipeWriteSerializer(serializers.ModelSerializer):
         fields = ('author', 'tag', 'image', 'ingredient', 'id', 'cook_time',
                   'name', 'text')
 
-    def get_ingredients(self, obj):
+    def validate_ingredients(self, obj):
         ingredients = obj
         if ingredients < 1:
-            raise ValidationError('В рецепте не может быть 0 ингредиентов.')
+            raise serializers.ValidationError(
+                'В рецепте не может быть 0 ингредиентов.'
+            )
         ingredients_list = []
         ingredient = get_object_or_404(Ingredient, id=self.context.id)
         if ingredient in ingredients_list:
-            raise ValidationError('Ингредиенты не могут дублироваться.')
+            raise serializers.ValidationError(
+                'Ингредиенты не могут дублироваться.'
+            )
         return obj
 
-    def get_tag(self, obj):
+    def validate_tag(self, obj):
         tags = obj
         if not tags:
-            raise ValidationError('Нужен хотя бы один тег.')
+            raise serializers.ValidationError('Нужен хотя бы один тег.')
         tags_list = []
         for tag in tags:
             if tag in tags_list:
-                raise ValidationError('Теги не могут повторяться.')
+                raise serializers.ValidationError('Теги не могут повторяться.')
             tags_list.append(tag)
         return obj
 
@@ -112,7 +115,7 @@ class RecipeWriteSerializer(serializers.ModelSerializer):
         IngredientRecipe.objects.bulk_create(
             [IngredientRecipe(
                 recipe=recipe,
-                ingredient=Ingredient.objects.get(id=ingredient['id']),
+                ingredient=Ingredient.objects.get(id='id'),
                 amount=ingredient['amount'])
                 for ingredient in ingredients
              ]
