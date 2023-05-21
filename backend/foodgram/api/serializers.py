@@ -83,7 +83,7 @@ class RecipeWriteSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Recipe
-        fields = ('author', 'tag', 'image', 'ingredient', 'id', 'cook_time',
+        fields = ('author', 'tag', 'image', 'ingredients', 'id', 'cook_time',
                   'name', 'text')
 
     def validate_ingredients(self, obj):
@@ -111,11 +111,11 @@ class RecipeWriteSerializer(serializers.ModelSerializer):
             tags_list.append(tag)
         return obj
 
-    def ingredients_amount(self, ingredients, recipe):
+    def ingredients_count(self, ingredients, recipe):
         IngredientRecipe.objects.bulk_create(
             [IngredientRecipe(
                 recipe=recipe,
-                ingredient=Ingredient.objects.get(id='id'),
+                ingredient=ingredient['id'],
                 amount=ingredient['amount'])
                 for ingredient in ingredients
              ]

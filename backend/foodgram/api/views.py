@@ -5,12 +5,11 @@ from django.shortcuts import get_object_or_404
 from django.utils import timezone
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
-from rest_framework.exceptions import ValidationError
-from rest_framework.permissions import SAFE_METHODS, IsAuthenticated
+from rest_framework.permissions import SAFE_METHODS, IsAuthenticated, AllowAny
 from rest_framework.response import Response
 
 from users.pagination import CustomPagination
-from users.permissions import IsAdminPermission, IsAuthorPermission
+from users.permissions import IsAuthorOrReadOnly
 from .filters import IngredientFilter, RecipeFilter
 from .models import (Ingredient, IngredientRecipe, Recipe, Tag,
                      FavoriteRecipes, ShoppingList)
@@ -23,7 +22,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
     queryset = Recipe.objects.all()
     serializer_class = RecipeSerializer
     pagination_class = CustomPagination
-    permission_classes = [IsAuthorPermission, IsAdminPermission]
+    permission_classes = [IsAuthorOrReadOnly]
     filter_backends = [DjangoFilterBackend]
     filterset_class = RecipeFilter
 
@@ -48,7 +47,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
     @action(
         detail=True,
         methods=['post', 'delete'],
-        permission_classes=[IsAuthenticated]
+        permission_classes=IsAuthenticated
     )
     def shopping_cart(self, request, pk):
         if request.method == 'POST':
@@ -85,7 +84,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
         ).values(
             'ingredient__name',
             'ingredient__measurement_unit'
-        ).annotate(ingredients_amount=Sum('amount'))
+        ).annotate(ingredients_count=Sum('count'))
 
         today = timezone.localtime(timezone.now())
         shopping_list = (
@@ -95,7 +94,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
         shopping_list += '\n'.join([
             f'- {ingredient["ingredient__name"]} '
             f'({ingredient["ingredient__measurement_unit"]})'
-            f' - {ingredient["amount"]}'
+            f' - {ingredient["count"]}'
             for ingredient in ingredients
         ])
         shopping_list += f'\n\nFoodgram ({today:%Y})'
@@ -109,12 +108,12 @@ class RecipeViewSet(viewsets.ModelViewSet):
 
 class TagViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = Tag.objects.all()
-    permission_classes = [IsAdminPermission]
+    permission_classes = AllowAny
     serializer_class = TagSerializer
 
 
 class IngredientViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = Ingredient.objects.all()
     serializer_class = IngredientSerializer
-    permission_classes = [IsAdminPermission]
+    permission_classes = AllowAny
     filterset_class = IngredientFilter
