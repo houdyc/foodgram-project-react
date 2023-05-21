@@ -84,7 +84,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
         ).values(
             'ingredient__name',
             'ingredient__measurement_unit'
-        ).annotate(ingredients_count=Sum('count'))
+        ).annotate(ingredients_count=Sum('amount'))
 
         today = timezone.localtime(timezone.now())
         shopping_list = (
@@ -94,7 +94,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
         shopping_list += '\n'.join([
             f'- {ingredient["ingredient__name"]} '
             f'({ingredient["ingredient__measurement_unit"]})'
-            f' - {ingredient["count"]}'
+            f' - {ingredient["amount"]}'
             for ingredient in ingredients
         ])
         shopping_list += f'\n\nFoodgram ({today:%Y})'

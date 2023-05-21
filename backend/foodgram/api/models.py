@@ -11,7 +11,7 @@ class Ingredient(models.Model):
         verbose_name='Название ингредиента.',
         help_text='Введите название ингредиента.'
     )
-    count = models.CharField(
+    amount = models.CharField(
         max_length=50,
         blank=False,
         verbose_name='Кол-во ингредиента.',
@@ -78,11 +78,11 @@ class Recipe(models.Model):
         through='IngredientRecipe',
         verbose_name='Ингредиенты',
     )
-    tag = models.ManyToManyField(
+    tags = models.ManyToManyField(
         Tag,
         verbose_name='Тег',
     )
-    cook_time = models.PositiveSmallIntegerField(
+    cooking_time = models.PositiveSmallIntegerField(
         validators=[MinValueValidator(
             1, message='Время должно быть больше 0.'
         )],
@@ -109,7 +109,7 @@ class IngredientRecipe(models.Model):
         on_delete=models.CASCADE,
         verbose_name='Ингредиент'
     )
-    count = models.PositiveSmallIntegerField(
+    amount = models.PositiveSmallIntegerField(
         validators=[MinValueValidator(
             1, 'Кол-во должно быть больше 0.'
         )]
