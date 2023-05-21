@@ -34,14 +34,14 @@ class IngredientSerializer(serializers.ModelSerializer):
 class RecipeReadSerializer(serializers.ModelSerializer):
     author = CustomUserSerializer(read_only=True)
     tag = TagSerializer(many=True, read_only=True)
-    ingredient = IngredientSerializer(read_only=True)
+    ingredients = IngredientSerializer(read_only=True)
     image = Base64ImageField()
-    is_selected = SerializerMethodField(read_only=True)
+    is_favorite = SerializerMethodField(read_only=True)
     is_shopped = SerializerMethodField(read_only=True)
 
     class Meta:
         model = Recipe
-        fields = ('author', 'tag', 'ingredient', 'is_selected', 'is_shopped',
+        fields = ('author', 'tag', 'ingredients', 'is_selected', 'is_shopped',
                   'image', 'cook_time', 'id', 'text', 'name')
 
     def get_ingredients(self, obj):
@@ -54,7 +54,7 @@ class RecipeReadSerializer(serializers.ModelSerializer):
         )
         return ingredients
 
-    def get_sellected(self, obj):
+    def get_favorite(self, obj):
         user = self.context.get('request').user
         if user.is_anonymous:
             return False
@@ -79,7 +79,7 @@ class RecipeWriteSerializer(serializers.ModelSerializer):
     author = CustomUserSerializer(read_only=True)
     tag = PrimaryKeyRelatedField(queryset=Tag.objects.all(), many=True)
     image = Base64ImageField()
-    ingredient = IngredientWriteSerializer(many=True)
+    ingredients = IngredientWriteSerializer(many=True)
 
     class Meta:
         model = Recipe

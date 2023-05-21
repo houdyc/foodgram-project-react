@@ -1,8 +1,8 @@
-from api.models import Recipe
 from django.contrib.auth import get_user_model
-from djoser.serializers import UserSerializer
+from djoser.serializers import UserSerializer, UserCreateSerializer
 from rest_framework import serializers
 
+from api.models import Recipe
 from users.models import Follow
 
 User = get_user_model()
@@ -26,7 +26,7 @@ class CustomUserSerializer(UserSerializer):
                   'last_name', 'is_follow')
 
 
-class UserCreateSerializer(CustomUserSerializer):
+class CreateUserSerializer(UserCreateSerializer):
 
     class Meta:
         model = User

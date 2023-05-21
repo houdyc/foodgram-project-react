@@ -41,7 +41,7 @@ class UsersViewSet(UserViewSet):
             user=user,
             author=author,
         ).exists():
-            raise exceptions.ValidationError('Подписка не существует.')
+            return Response(status=status.HTTP_204_NO_CONTENT)
 
         follow = get_object_or_404(Follow, user=user, author=author)
         follow.delete()

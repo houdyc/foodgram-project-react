@@ -73,7 +73,7 @@ class Recipe(models.Model):
         help_text='Автор рецепта.',
     )
     text = models.TextField()
-    ingredient = models.ManyToManyField(
+    ingredients = models.ManyToManyField(
         Ingredient,
         through='IngredientRecipe',
         verbose_name='Ингредиенты',
@@ -126,7 +126,7 @@ class IngredientRecipe(models.Model):
         verbose_name_plural = 'Ингредиенты в рецепте'
 
 
-class SelectedRecipes(models.Model):
+class FavoriteRecipes(models.Model):
     recipe = models.ForeignKey(
         Recipe,
         on_delete=models.CASCADE,

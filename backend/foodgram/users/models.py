@@ -1,67 +1,7 @@
-from django.contrib.auth.models import AbstractUser
-from django.contrib.auth.validators import UnicodeUsernameValidator
-from django.core.validators import EmailValidator
+from django.contrib.auth import get_user_model
 from django.db import models
 
-
-class User(AbstractUser):
-    USER = 'user'
-    ADMIN = 'admin'
-    ROLES = {
-        (USER, 'user'),
-        (ADMIN, 'admin'),
-    }
-    username = models.CharField(
-        max_length=40,
-        unique=True,
-        verbose_name='Имя пользователя',
-        validators=[
-            UnicodeUsernameValidator(message='Некорректное имя пользователя')
-        ]
-    )
-
-    email = models.EmailField(
-        max_length=254,
-        unique=True,
-        verbose_name='Email',
-        validators=[
-            EmailValidator(message='Некорректный email')
-        ]
-    )
-
-    first_name = models.CharField(
-        max_length=100,
-        blank=True,
-        verbose_name='Имя',
-    )
-
-    second_name = models.CharField(
-        max_length=100,
-        blank=True,
-        verbose_name='Фамилия',
-    )
-    role = models.CharField(
-        max_length=20,
-        choices=ROLES,
-        default=USER,
-        verbose_name='Роль',
-    )
-    password = models.CharField(
-        max_length=150,
-        help_text='Введите пароль',
-        verbose_name='Пароль',
-    )
-
-    class Meta:
-        verbose_name = 'Пользователь'
-        verbose_name_plural = 'Пользователи'
-
-    def __str__(self):
-        return self.get_full_name()
-
-    @property
-    def is_admin(self):
-        return self.is_superuser or self.role == self.ADMIN
+User = get_user_model()
 
 
 class Follow(models.Model):

@@ -13,7 +13,7 @@ from users.pagination import CustomPagination
 from users.permissions import IsAdminPermission, IsAuthorPermission
 from .filters import IngredientFilter, RecipeFilter
 from .models import (Ingredient, IngredientRecipe, Recipe, Tag,
-                     SelectedRecipes, ShoppingList)
+                     FavoriteRecipes, ShoppingList)
 from .serializers import (IngredientSerializer, RecipeReadSerializer,
                           RecipeSerializer, RecipeShortSerializer,
                           RecipeWriteSerializer, TagSerializer)
@@ -40,52 +40,36 @@ class RecipeViewSet(viewsets.ModelViewSet):
         methods=('post', 'delete'),
         serializer_class=IsAuthenticated
     )
-    def selected(self, request, pk):
-        user = self.request.user
-        recipe = get_object_or_404(Recipe, pk=pk)
+    def favorite(self, request, pk):
         if request.method == 'POST':
-            if SelectedRecipes.objects.filter(
-                    user=user, recipe=recipe
-            ).exists():
-                raise ValidationError('Данный пост уже добавлен в избранное.')
-            SelectedRecipes.objects.create(user=user, recipe=recipe)
-            serializer = RecipeShortSerializer
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
+            return self.add_to(FavoriteRecipes, request.user, pk)
+        return self.delete_from(FavoriteRecipes, request.user, pk)
 
-        if request.method == 'DELETE':
-            if not SelectedRecipes.objects.filter(
-                user=user, recipe=recipe
-            ).exists():
-                raise ValidationError('Данный пост не существует в избранном.')
-            selected = get_object_or_404(SelectedRecipes,
-                                         user=user, recipe=recipe)
-            selected.delete()
-            return Response(status=status.HTTP_204_NO_CONTENT)
-        return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
-
-    def shopping_list(self, request, pk):
-        user = self.request.user
-        recipe = get_object_or_404(Recipe, pk=pk)
-
+    @action(
+        detail=True,
+        methods=['post', 'delete'],
+        permission_classes=[IsAuthenticated]
+    )
+    def shopping_cart(self, request, pk):
         if request.method == 'POST':
-            if ShoppingList.objects.filter(user=user, recipe=recipe).exists():
-                raise ValidationError('Данный рецепт уже существует'
-                                      ' в списке покупок')
-            ShoppingList.objects.create(user=user, recipe=recipe)
-            serializer = RecipeShortSerializer
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
+            return self.add_to(ShoppingList, request.user, pk)
+        return self.delete_from(ShoppingList, request.user, pk)
 
-        if request.method == 'DELETE':
-            if not ShoppingList.objects.filter(
-                    user=user, recipe=recipe
-            ).exists():
-                raise ValidationError(
-                    'Данный рецепт отсутствует в списке покупок')
-            shop_list = get_object_or_404(ShoppingList,
-                                          user=user, recipe=recipe)
-            shop_list.delete()
+    def add_to(self, user, model, pk):
+        if model.objects.filter(user=user, id=pk).exists():
+            return Response('Данный рецепт уже добавлен.',
+                            status=status.HTTP_400_BAD_REQUEST)
+        recipe = get_object_or_404(Recipe, id=pk)
+        model.objects.create(user=user, recipe=recipe)
+        serializer = RecipeShortSerializer(recipe)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+    def delete_from(self, model, user, pk):
+        if model.objects.filter(user=user, id=pk).exists():
+            model.objects.delete()
             return Response(status=status.HTTP_204_NO_CONTENT)
-        return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
+        return Response('Рецепт уже удален.',
+                        status=status.HTTP_400_BAD_REQUEST)
 
     @action(
         detail=False,
