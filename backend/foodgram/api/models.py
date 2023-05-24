@@ -133,7 +133,7 @@ class IngredientRecipe(models.Model):
         verbose_name_plural = 'Ингредиенты в рецепте'
 
 
-class FavoriteRecipes(models.Model):
+class FavoriteRecipe(models.Model):
     recipe = models.ForeignKey(
         Recipe,
         on_delete=models.CASCADE,

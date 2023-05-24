@@ -119,11 +119,10 @@ class RecipeWriteSerializer(serializers.ModelSerializer):
 
         for ingredient in ingredients:
             amount = ingredient['amount']
-            ingredient = get_object_or_404(Ingredient, pk=ingredient['id'])
 
             IngredientRecipe.objects.create(
                 recipe=recipe,
-                ingredient=ingredient,
+                ingredient=ingredient.id,
                 amount=amount
             )
 
@@ -140,11 +139,10 @@ class RecipeWriteSerializer(serializers.ModelSerializer):
 
             for ingredient in ingredients:
                 amount = ingredient['amount']
-                ingredient = get_object_or_404(Ingredient, pk=ingredient['id'])
 
-                IngredientRecipe.objects.update_or_create(
+                IngredientRecipe.objects.create(
                     recipe=instance,
-                    ingredient=ingredient,
+                    ingredient=ingredient.id,
                     defaults={'amount': amount}
                 )
 

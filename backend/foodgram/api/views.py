@@ -12,7 +12,7 @@ from users.pagination import CustomPagination
 from users.permissions import IsAuthorOrReadOnly
 from .filters import IngredientFilter, RecipeFilter
 from .models import (Ingredient, IngredientRecipe, Recipe, Tag,
-                     FavoriteRecipes, ShoppingList)
+                     FavoriteRecipe, ShoppingList)
 from .serializers import (IngredientSerializer, RecipeReadSerializer,
                           RecipeSerializer, RecipeShortSerializer,
                           RecipeWriteSerializer, TagSerializer)
@@ -38,8 +38,8 @@ class RecipeViewSet(viewsets.ModelViewSet):
     )
     def favorite(self, request, pk):
         if request.method == 'POST':
-            return self.add_to(request.user, FavoriteRecipes, pk)
-        return self.delete_from(request.user, FavoriteRecipes, pk)
+            return self.add_to(request.user, FavoriteRecipe, pk)
+        return self.delete_from(request.user, FavoriteRecipe, pk)
 
     @action(
         detail=True,
@@ -91,7 +91,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
         shopping_list += '\n'.join([
             f'- {ingredient["ingredient__name"]} '
             f'({ingredient["ingredient__measurement_unit"]})'
-            f' - {ingredient["amount"]}'
+            f' - {ingredient["ingredients_amount"]}'
             for ingredient in ingredients
         ])
         shopping_list += f'\n\nFoodgram ({today:%Y})'
