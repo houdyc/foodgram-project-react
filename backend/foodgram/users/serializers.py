@@ -11,7 +11,7 @@ User = get_user_model()
 class CustomUserSerializer(UserSerializer):
     is_follow = serializers.SerializerMethodField(
         read_only=True,
-        method_name='get_is_follow'
+        method_name='user_is_followed'
     )
 
     def user_is_followed(self, obj):

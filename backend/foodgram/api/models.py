@@ -1,7 +1,8 @@
 from django.core.validators import MinValueValidator, RegexValidator
+from django.contrib.auth import get_user_model
 from django.db import models
 
-from users.models import User
+User = get_user_model()
 
 
 class Ingredient(models.Model):
@@ -21,7 +22,7 @@ class Ingredient(models.Model):
     class Meta:
         constraints = (
             models.UniqueConstraint(
-                fields=('name', 'count'),
+                fields=('name', 'amount'),
                 name='unique_fields'),
         )
         ordering = ['-id']
@@ -54,6 +55,7 @@ class Tag(models.Model):
     class Meta:
         verbose_name = 'Тег'
         verbose_name_plural = 'Теги'
+        ordering = ['pk']
 
     def __str__(self):
         return self.name
@@ -77,6 +79,11 @@ class Recipe(models.Model):
         Ingredient,
         through='IngredientRecipe',
         verbose_name='Ингредиенты',
+    )
+    image = models.ImageField(
+        verbose_name='Изображение для рецепта',
+        help_text='Изображение для рецепта',
+        upload_to='recipes/',
     )
     tags = models.ManyToManyField(
         Tag,

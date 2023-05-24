@@ -1,4 +1,5 @@
 from django.db import models
+from django.shortcuts import get_object_or_404
 from drf_base64.fields import Base64ImageField
 from rest_framework import serializers
 from rest_framework.fields import IntegerField, SerializerMethodField
@@ -20,14 +21,13 @@ class TagSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Tag
-        fields = ('name', 'color', 'slug', 'id')
+        fields = '__all__'
 
 
 class IngredientSerializer(serializers.ModelSerializer):
-
     class Meta:
         model = Ingredient
-        fields = ('name', 'amount', 'id')
+        fields = '__all__'
 
 
 class RecipeReadSerializer(serializers.ModelSerializer):
@@ -40,7 +40,7 @@ class RecipeReadSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Recipe
-        fields = ('author', 'tags', 'ingredients', 'is_selected', 'is_shopped',
+        fields = ('author', 'tags', 'ingredients', 'is_favorite', 'is_shopped',
                   'image', 'cooking_time', 'id', 'text', 'name')
 
     def get_ingredients(self, obj):
@@ -49,7 +49,7 @@ class RecipeReadSerializer(serializers.ModelSerializer):
             'id',
             'name',
             'amount',
-            count=models.F('amount_ingredient')
+            amount=models.F('amount_ingredient')
         )
         return ingredients
 
@@ -109,40 +109,54 @@ class RecipeWriteSerializer(serializers.ModelSerializer):
             tags_list.append(tag)
         return obj
 
-    def ingredients_count(self, ingredients, recipe):
-        IngredientRecipe.objects.bulk_create(
-            [IngredientRecipe(
-                recipe=recipe,
-                ingredient=ingredient['id'],
-                amount=ingredient['amount'])
-                for ingredient in ingredients
-             ]
-        )
-
     def create(self, validated_data):
-        ingredients = self.validated_data.pop('ingredients')
-        tags = self.validated_data.pop('tags')
-        recipe = Recipe.objects.create(**validated_data)
+        author = self.context.get('request').user
+        tags = validated_data.pop('tags')
+        ingredients = validated_data.pop('ingredients')
+
+        recipe = Recipe.objects.create(author=author, **validated_data)
         recipe.tags.set(tags)
-        self.ingredients_count(recipe=recipe,
-                               ingredients=ingredients)
+
+        for ingredient in ingredients:
+            amount = ingredient['amount']
+            ingredient = get_object_or_404(Ingredient, pk=ingredient['id'])
+
+            IngredientRecipe.objects.create(
+                recipe=recipe,
+                ingredient=ingredient,
+                amount=amount
+            )
+
         return recipe
 
     def update(self, instance, validated_data):
-        tags = validated_data.pop('tags')
-        ingredients = validated_data.pop('ingredients')
-        instance.tags.clear()
-        instance.tags.set(tags)
-        instance.ingredients.clear()
-        self.ingredients_count(recipe=instance,
-                               ingredients=ingredients)
+        tags = validated_data.pop('tags', None)
+        if tags is not None:
+            instance.tags.set(tags)
+
+        ingredients = validated_data.pop('ingredients', None)
+        if ingredients is not None:
+            instance.ingredients.clear()
+
+            for ingredient in ingredients:
+                amount = ingredient['amount']
+                ingredient = get_object_or_404(Ingredient, pk=ingredient['id'])
+
+                IngredientRecipe.objects.update_or_create(
+                    recipe=instance,
+                    ingredient=ingredient,
+                    defaults={'amount': amount}
+                )
+
         return super().update(instance, validated_data)
 
     def to_representation(self, instance):
-        request = self.context.get('request')
-        context = {'request': request}
-        return RecipeReadSerializer(instance,
-                                    context=context).data
+        serializer = RecipeSerializer(
+            instance,
+            context={'request': self.context.get('request')}
+        )
+
+        return serializer.data
 
 
 class RecipeShortSerializer(serializers.ModelSerializer):

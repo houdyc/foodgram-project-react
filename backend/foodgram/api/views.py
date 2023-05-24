@@ -5,7 +5,7 @@ from django.shortcuts import get_object_or_404
 from django.utils import timezone
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
-from rest_framework.permissions import SAFE_METHODS, IsAuthenticated, AllowAny
+from rest_framework.permissions import SAFE_METHODS, IsAuthenticated
 from rest_framework.response import Response
 
 from users.pagination import CustomPagination
@@ -26,9 +26,6 @@ class RecipeViewSet(viewsets.ModelViewSet):
     filter_backends = [DjangoFilterBackend]
     filterset_class = RecipeFilter
 
-    def perform_create(self, serializer):
-        serializer.save(author=self.request.user)
-
     def get_serializer_class(self):
         if self.request.method in SAFE_METHODS:
             return RecipeReadSerializer
@@ -36,23 +33,23 @@ class RecipeViewSet(viewsets.ModelViewSet):
 
     @action(
         detail=True,
-        methods=('post', 'delete'),
-        serializer_class=IsAuthenticated
+        methods=['post', 'delete'],
+        permission_classes=[IsAuthenticated]
     )
     def favorite(self, request, pk):
         if request.method == 'POST':
-            return self.add_to(FavoriteRecipes, request.user, pk)
-        return self.delete_from(FavoriteRecipes, request.user, pk)
+            return self.add_to(request.user, FavoriteRecipes, pk)
+        return self.delete_from(request.user, FavoriteRecipes, pk)
 
     @action(
         detail=True,
         methods=['post', 'delete'],
-        permission_classes=IsAuthenticated
+        permission_classes=[IsAuthenticated]
     )
     def shopping_cart(self, request, pk):
         if request.method == 'POST':
-            return self.add_to(ShoppingList, request.user, pk)
-        return self.delete_from(ShoppingList, request.user, pk)
+            return self.add_to(request.user, ShoppingList, pk)
+        return self.delete_from(request.user, ShoppingList, pk)
 
     def add_to(self, user, model, pk):
         if model.objects.filter(user=user, id=pk).exists():
@@ -84,7 +81,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
         ).values(
             'ingredient__name',
             'ingredient__measurement_unit'
-        ).annotate(ingredients_count=Sum('amount'))
+        ).annotate(ingredients_amount=Sum('amount'))
 
         today = timezone.localtime(timezone.now())
         shopping_list = (
@@ -108,12 +105,12 @@ class RecipeViewSet(viewsets.ModelViewSet):
 
 class TagViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = Tag.objects.all()
-    permission_classes = AllowAny
+    permission_classes = [IsAuthenticated]
     serializer_class = TagSerializer
 
 
 class IngredientViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = Ingredient.objects.all()
     serializer_class = IngredientSerializer
-    permission_classes = AllowAny
+    permission_classes = [IsAuthenticated]
     filterset_class = IngredientFilter
