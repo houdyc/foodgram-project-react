@@ -1,5 +1,4 @@
 from django.db import models
-from django.shortcuts import get_object_or_404
 from drf_base64.fields import Base64ImageField
 from rest_framework import serializers
 from rest_framework.fields import IntegerField, SerializerMethodField
@@ -68,6 +67,7 @@ class RecipeReadSerializer(serializers.ModelSerializer):
 
 class IngredientWriteSerializer(serializers.ModelSerializer):
     id = IntegerField(write_only=True)
+    amount = IntegerField()
 
     class Meta:
         model = IngredientRecipe
@@ -109,43 +109,32 @@ class RecipeWriteSerializer(serializers.ModelSerializer):
             tags_list.append(tag)
         return obj
 
+    def create_ingredients(self, recipe, tags, ingredients):
+        recipe.tags.set(tags)
+        IngredientRecipe.objects.bulk_create(
+            [IngredientRecipe(
+                recipe=recipe,
+                ingredient=Ingredient.objects.get(pk=ingredient['id']),
+                amount=ingredient['amount']
+            ) for ingredient in ingredients]
+        )
+
     def create(self, validated_data):
-        author = self.context.get('request').user
+        author = self.context['request'].user
         tags = validated_data.pop('tags')
         ingredients = validated_data.pop('ingredients')
-
         recipe = Recipe.objects.create(author=author, **validated_data)
-        recipe.tags.set(tags)
-
-        for ingredient in ingredients:
-            amount = ingredient['amount']
-
-            IngredientRecipe.objects.create(
-                recipe=recipe,
-                ingredient=ingredient.id,
-                amount=amount
-            )
-
+        self.create_ingredients(recipe, tags, ingredients)
         return recipe
 
     def update(self, instance, validated_data):
         tags = validated_data.pop('tags', None)
         if tags is not None:
             instance.tags.set(tags)
-
         ingredients = validated_data.pop('ingredients', None)
         if ingredients is not None:
             instance.ingredients.clear()
-
-            for ingredient in ingredients:
-                amount = ingredient['amount']
-
-                IngredientRecipe.objects.create(
-                    recipe=instance,
-                    ingredient=ingredient.id,
-                    defaults={'amount': amount}
-                )
-
+            self.create_ingredients(instance, tags, ingredients)
         return super().update(instance, validated_data)
 
     def to_representation(self, instance):

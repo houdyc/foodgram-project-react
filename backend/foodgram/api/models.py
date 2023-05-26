@@ -12,7 +12,7 @@ class Ingredient(models.Model):
         verbose_name='Название ингредиента.',
         help_text='Введите название ингредиента.'
     )
-    amount = models.CharField(
+    measurement_unit = models.CharField(
         max_length=50,
         blank=False,
         verbose_name='Кол-во ингредиента.',
@@ -22,7 +22,7 @@ class Ingredient(models.Model):
     class Meta:
         constraints = (
             models.UniqueConstraint(
-                fields=('name', 'amount'),
+                fields=('name', 'measurement_unit'),
                 name='unique_fields'),
         )
         ordering = ['-id']
@@ -84,6 +84,7 @@ class Recipe(models.Model):
         verbose_name='Изображение для рецепта',
         help_text='Изображение для рецепта',
         upload_to='recipes/',
+        blank=False
     )
     tags = models.ManyToManyField(
         Tag,
@@ -123,12 +124,12 @@ class IngredientRecipe(models.Model):
     )
 
     class Meta:
-        constraints = (
+        constraints = [
             models.UniqueConstraint(
-                fields=('recipe', 'ingredient',),
+                fields=['recipe', 'ingredient'],
                 name='recipe_ingredient'
             ),
-        )
+        ]
         verbose_name = 'Ингредиент в рецепте'
         verbose_name_plural = 'Ингредиенты в рецепте'
 
