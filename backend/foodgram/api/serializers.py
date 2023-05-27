@@ -1,11 +1,11 @@
-from django.db import models
 from drf_base64.fields import Base64ImageField
 from rest_framework import serializers
 from rest_framework.fields import IntegerField, SerializerMethodField
 from rest_framework.relations import PrimaryKeyRelatedField
 
-from .models import Ingredient, IngredientRecipe, Recipe, Tag
 from users.serializers import CustomUserSerializer
+
+from .models import Ingredient, IngredientRecipe, Recipe, Tag
 
 
 class RecipeSerializer(serializers.ModelSerializer):
@@ -29,6 +29,27 @@ class IngredientSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
+class RecipeIngredientsSerializer(serializers.ModelSerializer):
+    id = serializers.SerializerMethodField(method_name='get_id')
+    name = serializers.SerializerMethodField(method_name='get_name')
+    measurement_unit = serializers.SerializerMethodField(
+        method_name='get_measurement_unit'
+    )
+
+    def get_id(self, obj):
+        return obj.ingredient.id
+
+    def get_name(self, obj):
+        return obj.ingredient.name
+
+    def get_measurement_unit(self, obj):
+        return obj.ingredient.measurement_unit
+
+    class Meta:
+        model = IngredientRecipe
+        fields = ('id', 'name', 'measurement_unit', 'amount')
+
+
 class RecipeReadSerializer(serializers.ModelSerializer):
     author = CustomUserSerializer(read_only=True)
     tags = TagSerializer(many=True, read_only=True)
@@ -43,14 +64,10 @@ class RecipeReadSerializer(serializers.ModelSerializer):
                   'image', 'cooking_time', 'id', 'text', 'name')
 
     def get_ingredients(self, obj):
-        recipe = obj
-        ingredients = recipe.ingredients.values(
-            'id',
-            'name',
-            'amount',
-            amount=models.F('amount_ingredient')
-            )
-        return ingredients
+        ingredients = IngredientRecipe.objects.filter(recipe=obj)
+        serializer = RecipeIngredientsSerializer(ingredients, many=True)
+
+        return serializer.data
 
     def get_favorite(self, obj):
         user = self.context.get('request').user
