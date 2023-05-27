@@ -1,7 +1,5 @@
-from django.contrib import admin
-
 from api.models import Ingredient, Recipe, Tag
-
+from django.contrib import admin
 from .models import Follow
 
 
