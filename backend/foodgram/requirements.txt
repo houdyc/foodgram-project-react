@@ -8,5 +8,3 @@ WeasyPrint==52.5
 drf-base64==2.0
 psycopg2-binary==2.9.6
 python-dotenv
-pytest==6.2.4
-pytest-django==4.4.0
