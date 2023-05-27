@@ -4,7 +4,6 @@ from rest_framework import exceptions, status
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
-
 from users.models import Follow, User
 from users.pagination import CustomPagination
 from users.serializers import FollowSerializer
