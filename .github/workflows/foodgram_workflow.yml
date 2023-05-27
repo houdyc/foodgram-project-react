@@ -45,12 +45,20 @@ jobs:
     - name: Set up Docker Buildx
       uses: docker/setup-buildx-action@v1
  
-    - name: Push to Docker Hub
-      uses: docker/build-push-action@v2 
+    - name: Push backend image to Docker Hub
+      uses: docker/build-push-action@v2
       with:
-        context: foodgram_backend/
         push: true
-        tags: ${{ secrets.DOCKER_USERNAME }}/foodgram_backend:latest
+        tags: loren166/foodgram_backend
+        file: backend/foodgram/Dockerfile
+
+    - name: Push frontend image to Docker Hub
+      uses: docker/build-push-action@v2
+      with:
+        push: true
+        tags: loren166/foodgram_frontend
+        file: frontend/Dockerfile
+
         
   deploy:
     runs-on: ubuntu-latest
