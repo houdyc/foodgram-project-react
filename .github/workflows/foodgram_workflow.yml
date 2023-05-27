@@ -48,9 +48,15 @@ jobs:
     - name: Push to Docker Hub
       uses: docker/build-push-action@v2
       with:
-          context: ./backend
-          push: true
-          tags: loren166/foodgram_backend:latest
+        context: backend/
+        push: true
+        tags: loren166/foodgram_backend:latest
+    - name: Push frontend
+      uses: docker/build-push-action@v2
+      with:
+        context: frontend/
+        push: true
+        tags: loren166/foodgram_frontend:latest
 
 
         
