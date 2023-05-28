@@ -10,9 +10,7 @@ services:
       - ./.env
 
   backend:
-    build:
-      context: ../backend/foodgram
-      dockerfile: Dockerfile
+    image: loren166/foodgram_backend:latest
     restart: always
     volumes:
       - data_value:/app/data/
@@ -24,9 +22,7 @@ services:
       - ./.env
 
   frontend:
-    build:
-      context: ../frontend
-      dockerfile: Dockerfile
+    image: loren166/foodgram_frontend:latest
     volumes:
       - ../frontend/:/app/result_build/
     depends_on:
