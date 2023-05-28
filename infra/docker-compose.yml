@@ -8,7 +8,7 @@ services:
       - ./.env
 
   backend:
-    image: loren166/foodgram_backend 
+    image: loren166/foodgram_backend
     restart: always
     volumes:
       - static_value:/app/static/
@@ -19,7 +19,7 @@ services:
       - ./.env
 
   frontend:
-    image: loren166/foodgram_backend
+    image: loren166/foodgram_frontend
     volumes:
       - frontend_value:/app/build/
 
