@@ -19,7 +19,7 @@ services:
       - ./.env
 
   frontend:
-    image: loren166/foodgram_backend
+    image: loren166/foodgram_backend 
     volumes:
       - frontend_value:/app/build/
 
