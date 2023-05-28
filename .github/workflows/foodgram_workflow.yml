@@ -78,6 +78,10 @@ jobs:
           key: ${{ secrets.SSH_KEY }}
           passphrase: ${{ secrets.PASSPHRASE_SERVER }}
           script: |
+            sudo docker-compose stop
+            sudo docker-compose rm -f backend frontend
+            sudo docker image rm loren166/foodgram_backend loren166/foodgram_frontend
+            sudo docker-compose pull backend frontend
             sudo touch .env
             echo DB_ENGINE=${{ secrets.DB_ENGINE }} >> .env
             echo DB_NAME=${{ secrets.DB_NAME }} >> .env
@@ -85,14 +89,7 @@ jobs:
             echo POSTGRES_PASSWORD=${{ secrets.POSTGRES_PASSWORD }} >> .env
             echo DB_HOST=${{ secrets.DB_HOST }} >> .env
             echo DB_PORT=${{ secrets.DB_PORT }} >> .env
-            sudo docker-compose pull
             sudo docker-compose up -d 
-            sudo docker-compose exec -T web python manage.py makemigrations users
-            sudo docker-compose exec -T web python manage.py migrate users
-            sudo docker-compose exec -T web python manage.py makemigrations reviews
-            sudo docker-compose exec -T web python manage.py migrate reviews
-            sudo docker-compose exec -T web python manage.py migrate
-            sudo docker-compose exec -T web python manage.py collectstatic --no-input
 
 
   send_message:
