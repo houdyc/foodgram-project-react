@@ -10,7 +10,7 @@ services:
       - ./.env
 
   backend:
-    image: loren166/foodgram_backend:latest 
+    image: loren166/foodgram_backend:latest
     restart: always
     volumes:
       - data_value:/code/data/
