@@ -52,27 +52,29 @@ class RecipeReadSerializer(serializers.ModelSerializer):
     author = CustomUserSerializer(read_only=True)
     tags = TagSerializer(many=True, read_only=True)
     ingredients = IngredientSerializer(read_only=True)
-    image = Base64ImageField()
+    image = Base64ImageField(max_length=None, use_url=True)
     is_favorite = SerializerMethodField(read_only=True)
     is_shopped = SerializerMethodField(read_only=True)
 
     class Meta:
         model = Recipe
-        fields = ('author', 'tags', 'ingredients', 'is_favorite', 'is_shopped',
-                  'image', 'cooking_time', 'id', 'text', 'name')
+        fields = ('id', 'author', 'name', 'text', 'ingredients', 'tags',
+                  'cooking_time', 'is_favorite', 'is_shopped',
+                  'image')
+        read_only_fields = ('id', 'author', 'tags')
 
     def get_ingredients(self, obj):
         ingredients = IngredientRecipe.objects.filter(recipe=obj)
         serializer = RecipeIngredientsSerializer(ingredients, many=True)
         return serializer.data
 
-    def get_favorite(self, obj):
+    def get_is_favorite(self, obj):
         user = self.context.get('request').user
         if user.is_anonymous:
             return False
         return user.selected.filter(recipe=obj).exists()
 
-    def get_shopped(self, obj):
+    def get_is_shopped(self, obj):
         user = self.context.get('request').user
         if user.is_anonymous:
             return False
