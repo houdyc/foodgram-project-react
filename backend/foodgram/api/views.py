@@ -8,9 +8,9 @@ from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from users.pagination import CustomPagination
-from users.permissions import IsAdminOrReadOnly, IsAuthorOrReadOnly
+from users.permissions import IsAuthorOrReadOnly
 
-from .filters import IngredientFilter, RecipeFilter
+from .filters import RecipeFilter, IngredientFilter
 from .models import (FavoriteRecipe, Ingredient, IngredientRecipe, Recipe,
                      ShoppingList, Tag)
 from .serializers import (IngredientSerializer, RecipeReadSerializer,
@@ -26,9 +26,9 @@ class RecipeViewSet(viewsets.ModelViewSet):
     filterset_class = RecipeFilter
 
     def get_serializer_class(self):
-        if self.action in ('create', 'partial_update'):
-            return RecipeWriteSerializer
-        return RecipeReadSerializer
+        if self.request.method == 'GET':
+            return RecipeReadSerializer
+        return RecipeWriteSerializer
 
     @action(
         detail=True,
@@ -103,18 +103,13 @@ class RecipeViewSet(viewsets.ModelViewSet):
         return response
 
 
-class PermissionAndPaginationMixin:
-    permission_classes = (IsAdminOrReadOnly,)
-    pagination_class = None
-
-
-class TagViewSet(PermissionAndPaginationMixin, viewsets.ReadOnlyModelViewSet):
+class TagViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = Tag.objects.all()
     serializer_class = TagSerializer
 
 
-class IngredientViewSet(PermissionAndPaginationMixin,
-                        viewsets.ReadOnlyModelViewSet):
+class IngredientViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = Ingredient.objects.all()
     serializer_class = IngredientSerializer
-    filterset_class = IngredientFilter
+    filter_backends = (IngredientFilter,)
+    search_fields = ('^name',)
