@@ -113,7 +113,8 @@ class TagViewSet(PermissionAndPaginationMixin, viewsets.ReadOnlyModelViewSet):
     serializer_class = TagSerializer
 
 
-class IngredientViewSet(viewsets.ReadOnlyModelViewSet):
+class IngredientViewSet(PermissionAndPaginationMixin,
+                        viewsets.ReadOnlyModelViewSet):
     queryset = Ingredient.objects.all()
     serializer_class = IngredientSerializer
     filterset_class = IngredientFilter
