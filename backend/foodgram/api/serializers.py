@@ -59,7 +59,7 @@ class RecipeReadSerializer(serializers.ModelSerializer):
     class Meta:
         model = Recipe
         fields = ('id', 'author', 'name', 'text', 'ingredients', 'tags',
-                  'cooking_time', 'is_favorite', 'is_shopped',
+                  'cooking_time', 'is_favorited', 'is_in_shopping_cart',
                   'image')
         read_only_fields = ('id', 'author', 'tags')
 
@@ -68,13 +68,13 @@ class RecipeReadSerializer(serializers.ModelSerializer):
         serializer = RecipeIngredientsSerializer(ingredients, many=True)
         return serializer.data
 
-    def get_is_favorite(self, obj):
+    def get_is_favorited(self, obj):
         user = self.context.get('request').user
         if user.is_anonymous:
             return False
         return user.selected.filter(recipe=obj).exists()
 
-    def get_is_shopped(self, obj):
+    def get_is_in_shopping_cart(self, obj):
         user = self.context.get('request').user
         if user.is_anonymous:
             return False
