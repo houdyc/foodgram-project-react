@@ -6,6 +6,6 @@ djangorestframework-simplejwt==4.8.0
 djoser==2.1.0
 WeasyPrint==52.5
 drf-base64==2.0
-psycopg2-binary==2.9.6
+psycopg2-binary==2.8.6
 python-dotenv
 gunicorn==20.0.4
