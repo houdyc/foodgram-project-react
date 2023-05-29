@@ -8,7 +8,7 @@ from rest_framework.decorators import action
 from rest_framework.permissions import SAFE_METHODS, IsAuthenticated
 from rest_framework.response import Response
 from users.pagination import CustomPagination
-from users.permissions import IsAuthorOrReadOnly
+from users.permissions import IsAuthorOrReadOnly, IsAdminOrReadOnly
 
 from .filters import IngredientFilter, RecipeFilter
 from .models import (FavoriteRecipe, Ingredient, IngredientRecipe, Recipe,
@@ -103,14 +103,17 @@ class RecipeViewSet(viewsets.ModelViewSet):
         return response
 
 
-class TagViewSet(viewsets.ReadOnlyModelViewSet):
+class PermissionAndPaginationMixin:
+    permission_classes = (IsAdminOrReadOnly,)
+    pagination_class = None
+
+
+class TagViewSet(PermissionAndPaginationMixin, viewsets.ReadOnlyModelViewSet):
     queryset = Tag.objects.all()
-    permission_classes = [IsAuthenticated]
     serializer_class = TagSerializer
 
 
 class IngredientViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = Ingredient.objects.all()
     serializer_class = IngredientSerializer
-    permission_classes = [IsAuthenticated]
     filterset_class = IngredientFilter
