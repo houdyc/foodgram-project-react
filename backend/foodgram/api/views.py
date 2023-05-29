@@ -14,22 +14,21 @@ from .filters import IngredientFilter, RecipeFilter
 from .models import (FavoriteRecipe, Ingredient, IngredientRecipe, Recipe,
                      ShoppingList, Tag)
 from .serializers import (IngredientSerializer, RecipeReadSerializer,
-                          RecipeSerializer, RecipeShortSerializer,
-                          RecipeWriteSerializer, TagSerializer)
+                          RecipeShortSerializer, RecipeWriteSerializer,
+                          TagSerializer)
 
 
 class RecipeViewSet(viewsets.ModelViewSet):
     queryset = Recipe.objects.all()
-    serializer_class = RecipeSerializer
     pagination_class = CustomPagination
     permission_classes = [IsAuthorOrReadOnly]
     filter_backends = [DjangoFilterBackend]
     filterset_class = RecipeFilter
 
     def get_serializer_class(self):
-        if self.request.method in SAFE_METHODS:
-            return RecipeReadSerializer
-        return RecipeWriteSerializer
+        if self.action in ('create', 'partial_update'):
+            return RecipeWriteSerializer
+        return RecipeReadSerializer
 
     @action(
         detail=True,
