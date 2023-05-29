@@ -80,7 +80,7 @@ class Recipe(models.Model):
         through='IngredientRecipe',
         verbose_name='Ингредиенты',
     )
-    image = models.FileField(
+    image = models.ImageField(
         verbose_name='Изображение для рецепта',
         help_text='Изображение для рецепта',
         upload_to='recipes/images',
