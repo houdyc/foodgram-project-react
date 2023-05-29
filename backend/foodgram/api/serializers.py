@@ -1,6 +1,6 @@
 from drf_base64.fields import Base64ImageField
 from rest_framework import serializers
-from rest_framework.fields import IntegerField, SerializerMethodField
+from rest_framework.fields import IntegerField
 from rest_framework.relations import PrimaryKeyRelatedField
 from users.serializers import CustomUserSerializer
 
@@ -19,7 +19,7 @@ class TagSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Tag
-        fields = '__all__'
+        fields = ('id', 'name', 'color', 'slug',)
 
 
 class IngredientSerializer(serializers.ModelSerializer):
@@ -52,15 +52,15 @@ class RecipeIngredientsSerializer(serializers.ModelSerializer):
 class RecipeReadSerializer(serializers.ModelSerializer):
     author = CustomUserSerializer(read_only=True)
     tags = TagSerializer(many=True, read_only=True)
-    ingredients = IngredientSerializer(read_only=True)
+    ingredients = RecipeIngredientsSerializer(many=True, required=True,
+                                              read_only=True)
     image = Base64ImageField()
-    is_favorite = SerializerMethodField(read_only=True)
-    is_shopped = SerializerMethodField(read_only=True)
+    is_favorite = serializers.BooleanField(read_only=True)
+    is_shopped = serializers.BooleanField(read_only=True)
 
     class Meta:
         model = Recipe
-        fields = ('author', 'tags', 'ingredients', 'is_favorite', 'is_shopped',
-                  'image', 'cooking_time', 'id', 'text', 'name')
+        fields = '__all__'
 
     def get_ingredients(self, obj):
         ingredients = IngredientRecipe.objects.filter(recipe=obj)
