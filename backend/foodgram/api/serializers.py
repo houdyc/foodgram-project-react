@@ -4,8 +4,8 @@ from rest_framework.fields import IntegerField, SerializerMethodField
 from rest_framework.relations import PrimaryKeyRelatedField
 from users.serializers import CustomUserSerializer
 
-from .models import (Ingredient, IngredientRecipe, Recipe, Tag, FavoriteRecipe,
-                     ShoppingList)
+from .models import (FavoriteRecipe, Ingredient, IngredientRecipe, Recipe,
+                     ShoppingList, Tag)
 
 
 class RecipeSerializer(serializers.ModelSerializer):
