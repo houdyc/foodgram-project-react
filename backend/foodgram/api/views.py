@@ -10,7 +10,7 @@ from rest_framework.response import Response
 from users.pagination import CustomPagination
 from users.permissions import IsAuthorOrReadOnly
 
-from .filters import RecipeFilter, IngredientFilter
+from .filters import IngredientFilter, RecipeFilter
 from .models import (FavoriteRecipe, Ingredient, IngredientRecipe, Recipe,
                      ShoppingList, Tag)
 from .serializers import (IngredientSerializer, RecipeReadSerializer,
