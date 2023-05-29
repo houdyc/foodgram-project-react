@@ -98,8 +98,7 @@ class RecipeWriteSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Recipe
-        fields = ('author', 'tags', 'image', 'ingredients', 'id',
-                  'cooking_time', 'name', 'text')
+        fields = '__all__'
 
     def validate_ingredients(self, obj):
         if not obj:
