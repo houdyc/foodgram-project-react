@@ -31,6 +31,9 @@ class RecipeViewSet(viewsets.ModelViewSet):
             return RecipeReadSerializer
         return RecipeWriteSerializer
 
+    def perform_create(self, serializer):
+        serializer.save(author=self.request.user)
+
     @action(
         detail=True,
         methods=['post', 'delete'],
@@ -69,6 +72,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
 
     @action(
         detail=False,
+        methods=['GET'],
         permission_classes=[IsAuthenticated]
     )
     def download_shopping_list(self, request):

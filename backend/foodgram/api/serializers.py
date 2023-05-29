@@ -12,13 +12,14 @@ class RecipeSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Recipe
-        fields = ('id', 'name', 'image', 'cooking_time')
+        fields = ('id', 'name', 'image', 'cooking_time', 'author', 'text',
+                  'tags', 'ingredients')
 
 
 class TagSerializer(serializers.ModelSerializer):
     class Meta:
         model = Tag
-        fields = ('id', 'name', 'color', 'slug',)
+        fields = '__all__'
 
 
 class IngredientSerializer(serializers.ModelSerializer):
@@ -53,8 +54,8 @@ class RecipeReadSerializer(serializers.ModelSerializer):
     tags = TagSerializer(many=True, read_only=True)
     ingredients = IngredientSerializer(read_only=True)
     image = Base64ImageField(max_length=None, use_url=True)
-    is_favorite = SerializerMethodField(read_only=True)
-    is_shopped = SerializerMethodField(read_only=True)
+    is_favorited = SerializerMethodField(read_only=True)
+    is_in_shopping_cart = SerializerMethodField(read_only=True)
 
     class Meta:
         model = Recipe
