@@ -1,6 +1,6 @@
 from api.models import Recipe
 from django.contrib.auth import get_user_model
-from djoser.serializers import UserSerializer
+from djoser.serializers import UserCreateSerializer, UserSerializer
 from rest_framework import serializers
 from users.models import Subscribe
 
@@ -12,14 +12,7 @@ class CustomUserSerializer(UserSerializer):
     last_name = serializers.CharField(required=True)
     username = serializers.CharField(required=True)
     email = serializers.CharField(required=True)
-    password = serializers.CharField(required=True, write_only=True)
     is_subscribed = serializers.SerializerMethodField()
-
-    def create(self, validated_data):
-        user = User(**validated_data)
-        user.set_password(validated_data['password'])
-        user.save()
-        return user
 
     def get_is_subscribed(self, obj):
         request = self.context.get('request')
@@ -33,6 +26,14 @@ class CustomUserSerializer(UserSerializer):
         model = User
         fields = ('id', 'email', 'username', 'first_name',
                   'last_name', 'is_subscribed')
+
+
+class CreateUserSerializer(UserCreateSerializer):
+
+    class Meta:
+        model = User
+        fields = ('id', 'email', 'username', 'first_name',
+                  'last_name', 'password')
 
 
 class FollowRecipeSerializer(serializers.ModelSerializer):
