@@ -12,8 +12,11 @@ class CustomUserSerializer(UserSerializer):
         read_only=True,
         method_name='user_is_followed'
     )
+    first_name = serializers.CharField(required=True)
+    last_name = serializers.CharField(required=True)
+    is_subscribed = serializers.SerializerMethodField()
 
-    def user_is_followed(self, obj):
+    def user_is_subscribed(self, obj):
         user = self.context['request'].user
         if user.is_anonymous:
             return False
