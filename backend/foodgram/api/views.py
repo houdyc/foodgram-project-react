@@ -3,7 +3,7 @@ from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
 from django_filters.rest_framework import DjangoFilterBackend
-from rest_framework import status, viewsets, exceptions
+from rest_framework import  exceptions, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
@@ -41,13 +41,11 @@ class RecipeViewSet(viewsets.ModelViewSet):
                     recipe=recipe
             ).exists():
                 raise exceptions.ValidationError('Рецепт уже в избранном.')
-
             FavoriteRecipe.objects.create(user=user, recipe=recipe)
             serializer = RecipeShortSerializer(
                 recipe,
                 context={'request': request}
             )
-
             return Response(serializer.data, status=status.HTTP_201_CREATED)
 
         if self.request.method == 'DELETE':
@@ -58,12 +56,10 @@ class RecipeViewSet(viewsets.ModelViewSet):
                 raise exceptions.ValidationError(
                     'Рецепта нет в избранном, либо он уже удален.'
                 )
-
-            favorite = get_object_or_404(FavoriteRecipe, user=user, recipe=recipe)
+            favorite = get_object_or_404(FavoriteRecipe, user=user,
+                                         recipe=recipe)
             favorite.delete()
-
             return Response(status=status.HTTP_204_NO_CONTENT)
-
         return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
 
     @action(detail=True, methods=('post', 'delete'))
@@ -79,13 +75,11 @@ class RecipeViewSet(viewsets.ModelViewSet):
                 raise exceptions.ValidationError(
                     'Рецепт уже в списке покупок.'
                 )
-
             ShoppingList.objects.create(user=user, recipe=recipe)
             serializer = RecipeShortSerializer(
                 recipe,
                 context={'request': request}
             )
-
             return Response(serializer.data, status=status.HTTP_201_CREATED)
 
         if self.request.method == 'DELETE':
@@ -103,9 +97,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
                 recipe=recipe
             )
             shopping_cart.delete()
-
             return Response(status=status.HTTP_204_NO_CONTENT)
-
         return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
 
     @action(
