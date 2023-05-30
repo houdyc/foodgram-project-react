@@ -2,35 +2,37 @@ from api.models import Recipe
 from django.contrib.auth import get_user_model
 from djoser.serializers import UserCreateSerializer, UserSerializer
 from rest_framework import serializers
-from users.models import Follow
+from users.models import Subscribe
 
 User = get_user_model()
 
 
 class CustomUserSerializer(UserSerializer):
-    is_follow = serializers.SerializerMethodField(
-        read_only=True,
-        method_name='user_is_followed'
-    )
+    first_name = serializers.CharField(required=True)
+    last_name = serializers.CharField(required=True)
+    username = serializers.CharField(required=True)
+    email = serializers.CharField(required=True)
+    password = serializers.CharField(required=True, write_only=True)
+    is_subscribed = serializers.SerializerMethodField()
 
-    def user_is_followed(self, obj):
-        user = self.context['request'].user
-        if user.is_anonymous:
+    def create(self, validated_data):
+        user = User(**validated_data)
+        user.set_password(validated_data['password'])
+        user.save()
+        return user
+
+    def get_is_subscribed(self, obj):
+        request = self.context.get('request')
+        if request.user.is_anonymous:
             return False
-        return Follow.objects.filter(user=user, author=obj)
+        return Subscribe.objects.filter(
+            user=request.user, author=obj
+        ).exists()
 
     class Meta:
         model = User
         fields = ('id', 'email', 'username', 'first_name',
-                  'last_name', 'is_follow')
-
-
-class CreateUserSerializer(UserCreateSerializer):
-
-    class Meta:
-        model = User
-        fields = ('id', 'email', 'username', 'first_name',
-                  'last_name', 'password')
+                  'last_name', 'is_subscribed')
 
 
 class FollowRecipeSerializer(serializers.ModelSerializer):
