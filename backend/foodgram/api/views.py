@@ -8,7 +8,7 @@ from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from users.pagination import CustomPagination
-from users.permissions import IsAuthorOrReadOnly
+from users.permissions import IsAdminOrReadOnly, IsAuthorOrReadOnly
 
 from .filters import IngredientFilter, RecipeFilter
 from .models import (FavoriteRecipe, Ingredient, IngredientRecipe, Recipe,
@@ -26,9 +26,9 @@ class RecipeViewSet(viewsets.ModelViewSet):
     filterset_class = RecipeFilter
 
     def get_serializer_class(self):
-        if self.request.method == 'GET':
-            return RecipeReadSerializer
-        return RecipeWriteSerializer
+        if self.action in ('create', 'partial_update'):
+            return RecipeWriteSerializer
+        return RecipeReadSerializer
 
     @action(
         detail=True,
@@ -103,13 +103,18 @@ class RecipeViewSet(viewsets.ModelViewSet):
         return response
 
 
-class TagViewSet(viewsets.ReadOnlyModelViewSet):
+class PermissionAndPaginationMixin:
+    permission_classes = (IsAdminOrReadOnly,)
+    pagination_class = None
+
+
+class TagViewSet(PermissionAndPaginationMixin, viewsets.ReadOnlyModelViewSet):
     queryset = Tag.objects.all()
     serializer_class = TagSerializer
 
 
-class IngredientViewSet(viewsets.ReadOnlyModelViewSet):
+class IngredientViewSet(PermissionAndPaginationMixin,
+                        viewsets.ReadOnlyModelViewSet):
     queryset = Ingredient.objects.all()
     serializer_class = IngredientSerializer
-    filter_backends = (IngredientFilter,)
-    search_fields = ('^name',)
+    filterset_class = IngredientFilter
