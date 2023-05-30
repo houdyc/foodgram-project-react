@@ -13,7 +13,7 @@ from users.permissions import IsAdminOrReadOnly, IsAuthorOrReadOnly
 from .filters import IngredientFilter, RecipeFilter
 from .models import (FavoriteRecipe, Ingredient, IngredientRecipe, Recipe,
                      ShoppingList, Tag)
-from .serializers import (IngredientSerializer, RecipeReadSerializer,
+from .serializers import (IngredientSerializer, RecipeSerializer,
                           RecipeShortSerializer, RecipeWriteSerializer,
                           TagSerializer)
 
@@ -28,7 +28,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
     def get_serializer_class(self):
         if self.action in ('create', 'partial_update'):
             return RecipeWriteSerializer
-        return RecipeReadSerializer
+        return RecipeSerializer
 
     @action(
         detail=True,
