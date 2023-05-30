@@ -8,7 +8,7 @@ User = get_user_model()
 
 
 class CustomUserSerializer(UserSerializer):
-    is_followed = serializers.SerializerMethodField(
+    is_follow = serializers.SerializerMethodField(
         read_only=True,
         method_name='user_is_followed'
     )
