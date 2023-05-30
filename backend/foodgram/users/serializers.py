@@ -37,7 +37,7 @@ class FollowRecipeSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Recipe
-        fields = ('id', 'name', 'image', 'product_list')
+        fields = ('id', 'name', 'image', 'ingredients')
 
 
 class FollowSerializer(CustomUserSerializer):

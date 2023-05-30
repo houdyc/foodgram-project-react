@@ -3,7 +3,7 @@ from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
 from django_filters.rest_framework import DjangoFilterBackend
-from rest_framework import status, viewsets
+from rest_framework import status, viewsets, exceptions
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
@@ -30,41 +30,83 @@ class RecipeViewSet(viewsets.ModelViewSet):
             return RecipeWriteSerializer
         return RecipeSerializer
 
-    @action(
-        detail=True,
-        methods=['post', 'delete'],
-        permission_classes=[IsAuthenticated]
-    )
-    def favorite(self, request, pk):
-        if request.method == 'POST':
-            return self.add_to(request.user, FavoriteRecipe, pk)
-        return self.delete_from(request.user, FavoriteRecipe, pk)
+    @action(detail=True, methods=('post', 'delete'))
+    def favorite(self, request, pk=None):
+        user = self.request.user
+        recipe = get_object_or_404(Recipe, pk=pk)
 
-    @action(
-        detail=True,
-        methods=['post', 'delete'],
-        permission_classes=[IsAuthenticated]
-    )
-    def shopping_cart(self, request, pk):
-        if request.method == 'POST':
-            return self.add_to(request.user, ShoppingList, pk)
-        return self.delete_from(request.user, ShoppingList, pk)
+        if self.request.method == 'POST':
+            if FavoriteRecipe.objects.filter(
+                    user=user,
+                    recipe=recipe
+            ).exists():
+                raise exceptions.ValidationError('Рецепт уже в избранном.')
 
-    def add_to(self, user, model, pk):
-        if model.objects.filter(user=user, id=pk).exists():
-            return Response('Данный рецепт уже добавлен.',
-                            status=status.HTTP_400_BAD_REQUEST)
-        recipe = get_object_or_404(Recipe, id=pk)
-        model.objects.create(user=user, recipe=recipe)
-        serializer = RecipeShortSerializer(recipe)
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
+            FavoriteRecipe.objects.create(user=user, recipe=recipe)
+            serializer = RecipeShortSerializer(
+                recipe,
+                context={'request': request}
+            )
 
-    def delete_from(self, model, user, pk):
-        if model.objects.filter(user=user, id=pk).exists():
-            model.objects.delete()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+        if self.request.method == 'DELETE':
+            if not FavoriteRecipe.objects.filter(
+                    user=user,
+                    recipe=recipe
+            ).exists():
+                raise exceptions.ValidationError(
+                    'Рецепта нет в избранном, либо он уже удален.'
+                )
+
+            favorite = get_object_or_404(FavoriteRecipe, user=user, recipe=recipe)
+            favorite.delete()
+
             return Response(status=status.HTTP_204_NO_CONTENT)
-        return Response('Рецепт уже удален.',
-                        status=status.HTTP_400_BAD_REQUEST)
+
+        return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
+
+    @action(detail=True, methods=('post', 'delete'))
+    def shopping_cart(self, request, pk=None):
+        user = self.request.user
+        recipe = get_object_or_404(Recipe, pk=pk)
+
+        if self.request.method == 'POST':
+            if ShoppingList.objects.filter(
+                    user=user,
+                    recipe=recipe
+            ).exists():
+                raise exceptions.ValidationError(
+                    'Рецепт уже в списке покупок.'
+                )
+
+            ShoppingList.objects.create(user=user, recipe=recipe)
+            serializer = RecipeShortSerializer(
+                recipe,
+                context={'request': request}
+            )
+
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+        if self.request.method == 'DELETE':
+            if not ShoppingList.objects.filter(
+                    user=user,
+                    recipe=recipe
+            ).exists():
+                raise exceptions.ValidationError(
+                    'Рецепта нет в списке покупок, либо он уже удален.'
+                )
+
+            shopping_cart = get_object_or_404(
+                ShoppingList,
+                user=user,
+                recipe=recipe
+            )
+            shopping_cart.delete()
+
+            return Response(status=status.HTTP_204_NO_CONTENT)
+
+        return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
 
     @action(
         detail=False,
