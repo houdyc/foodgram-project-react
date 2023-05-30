@@ -2,27 +2,27 @@ from api.models import Recipe
 from django.contrib.auth import get_user_model
 from djoser.serializers import UserCreateSerializer, UserSerializer
 from rest_framework import serializers
-from users.models import Follow
+from users.models import Subscription
 
 User = get_user_model()
 
 
 class CustomUserSerializer(UserSerializer):
-    is_follow = serializers.SerializerMethodField(
+    is_subscribed = serializers.SerializerMethodField(
         read_only=True,
-        method_name='user_is_followed'
+        method_name='user_is_subscribed'
     )
 
-    def user_is_followed(self, obj):
+    def user_is_subscribed(self, obj):
         user = self.context['request'].user
         if user.is_anonymous:
             return False
-        return Follow.objects.filter(user=user, author=obj)
+        return Subscription.objects.filter(user=user, author=obj)
 
     class Meta:
         model = User
         fields = ('id', 'email', 'username', 'first_name',
-                  'last_name', 'is_follow')
+                  'last_name', 'is_subscribed')
 
 
 class CreateUserSerializer(UserCreateSerializer):
@@ -33,21 +33,21 @@ class CreateUserSerializer(UserCreateSerializer):
                   'last_name', 'password')
 
 
-class FollowRecipeSerializer(serializers.ModelSerializer):
+class SubscriptionRecipeSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Recipe
         fields = ('id', 'name', 'image', 'ingredients')
 
 
-class FollowSerializer(CustomUserSerializer):
+class SubscriptionSerializer(CustomUserSerializer):
     recipes = serializers.SerializerMethodField(read_only=True)
     recipes_count = serializers.SerializerMethodField(read_only=True)
 
     class Meta:
         model = User
         fields = ('id', 'email', 'username', 'first_name',
-                  'last_name', 'is_follow', 'recipes', 'recipes_count')
+                  'last_name', 'is_subscribed', 'recipes', 'recipes_count')
 
     def get_recipes(self, obj):
         request = self.context.get('request')
@@ -58,8 +58,8 @@ class FollowSerializer(CustomUserSerializer):
         else:
             recipes = obj.recipes.all()
         context = {'request': request}
-        return FollowRecipeSerializer(recipes, many=True,
-                                      context=context).data
+        return SubscriptionRecipeSerializer(recipes, many=True,
+                                            context=context).data
 
     def get_recipes_count(self, obj):
         return obj.recipes.count()
