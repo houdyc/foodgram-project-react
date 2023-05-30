@@ -11,7 +11,6 @@ class CustomUserSerializer(UserSerializer):
     first_name = serializers.CharField(required=True)
     last_name = serializers.CharField(required=True)
     username = serializers.CharField(required=True)
-    email = serializers.CharField(required=True)
     is_subscribed = serializers.SerializerMethodField()
 
     def get_is_subscribed(self, obj):
