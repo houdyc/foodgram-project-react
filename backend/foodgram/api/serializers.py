@@ -10,6 +10,7 @@ from .models import (FavoriteRecipe, Ingredient, IngredientRecipe, Recipe,
 
 class RecipeSerializer(serializers.ModelSerializer):
     image = Base64ImageField()
+    author = CustomUserSerializer(default=serializers.CurrentUserDefault())
     is_favorited = serializers.SerializerMethodField(
         method_name='get_is_favorited')
     is_in_shopping_cart = serializers.SerializerMethodField(
@@ -18,7 +19,8 @@ class RecipeSerializer(serializers.ModelSerializer):
     class Meta:
         model = Recipe
         fields = ('id', 'name', 'image', 'cooking_time', 'author',
-                  'ingredients', 'is_favorited', 'is_in_shopping_cart', 'text')
+                  'ingredients', 'is_favorited', 'is_in_shopping_cart', 'text',
+                  'tags')
 
     def get_is_favorited(self, obj):
         user = self.context.get('request').user
