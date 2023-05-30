@@ -83,7 +83,7 @@ class Recipe(models.Model):
     image = models.ImageField(
         verbose_name='Изображение для рецепта',
         help_text='Изображение для рецепта',
-        upload_to='recipes/images',
+        upload_to='recipes/',
         blank=False
     )
     tags = models.ManyToManyField(

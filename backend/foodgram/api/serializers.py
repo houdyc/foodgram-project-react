@@ -10,10 +10,27 @@ from .models import (FavoriteRecipe, Ingredient, IngredientRecipe, Recipe,
 
 class RecipeSerializer(serializers.ModelSerializer):
     image = Base64ImageField()
+    is_favorited = serializers.SerializerMethodField(
+        method_name='get_is_favorited')
+    is_in_shopping_cart = serializers.SerializerMethodField(
+        method_name='get_is_in_shopping_cart')
 
     class Meta:
         model = Recipe
-        fields = ('id', 'name', 'image', 'cooking_time')
+        fields = ('id', 'name', 'image', 'cooking_time', 'author',
+                  'ingredients', 'is_favorited', 'is_in_shopping_cart', 'text')
+
+    def get_is_favorited(self, obj):
+        user = self.context.get('request').user
+        if user.is_anonymous:
+            return False
+        return FavoriteRecipe.objects.filter(user=user, recipe=obj).exists()
+
+    def get_is_in_shopping_cart(self, obj):
+        user = self.context.get('request').user
+        if user.is_anonymous:
+            return False
+        return ShoppingList.objects.filter(user=user, recipe=obj).exists()
 
 
 class TagSerializer(serializers.ModelSerializer):
