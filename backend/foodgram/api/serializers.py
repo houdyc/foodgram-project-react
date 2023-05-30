@@ -8,37 +8,17 @@ from .models import (FavoriteRecipe, Ingredient, IngredientRecipe, Recipe,
                      ShoppingList, Tag)
 
 
-class TagSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Tag
-        fields = '__all__'
-
-
-class IngredientSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Ingredient
-        fields = '__all__'
-
-
 class RecipeSerializer(serializers.ModelSerializer):
-    author = CustomUserSerializer(read_only=True)
-    tags = TagSerializer(many=True, read_only=True)
-    ingredients = IngredientSerializer(read_only=True)
-    image = Base64ImageField(max_length=None, use_url=True)
-    is_favorited = SerializerMethodField(read_only=True)
-    is_in_shopping_cart = SerializerMethodField(read_only=True)
+    image = Base64ImageField()
+    is_favorited = serializers.SerializerMethodField(
+        method_name='get_is_favorited')
+    is_in_shopping_cart = serializers.SerializerMethodField(
+        method_name='get_is_in_shopping_cart')
 
     class Meta:
         model = Recipe
-        fields = ('id', 'author', 'name', 'text', 'ingredients', 'tags',
-                  'cooking_time', 'is_favorited', 'is_in_shopping_cart',
-                  'image')
-        read_only_fields = ('id', 'author', 'tags')
-
-    def get_ingredients(self, obj):
-        ingredients = IngredientRecipe.objects.filter(recipe=obj)
-        serializer = RecipeIngredientsSerializer(ingredients, many=True)
-        return serializer.data
+        fields = ('id', 'name', 'image', 'cooking_time', 'author',
+                  'ingredients', 'is_favorited', 'is_in_shopping_cart', 'text')
 
     def get_is_favorited(self, obj):
         user = self.context.get('request').user
@@ -51,6 +31,18 @@ class RecipeSerializer(serializers.ModelSerializer):
         if user.is_anonymous:
             return False
         return ShoppingList.objects.filter(user=user, recipe=obj).exists()
+
+
+class TagSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Tag
+        fields = '__all__'
+
+
+class IngredientSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Ingredient
+        fields = '__all__'
 
 
 class RecipeIngredientsSerializer(serializers.ModelSerializer):
