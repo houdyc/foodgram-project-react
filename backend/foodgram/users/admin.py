@@ -1,10 +1,10 @@
 from api.models import Ingredient, Recipe, Tag
 from django.contrib import admin
 
-from .models import Subscription
+from .models import Follow
 
 
-@admin.register(Subscription)
+@admin.register(Follow)
 class FollowAdmin(admin.ModelAdmin):
     list_display = ('id', 'user', 'author')
     search_fields = ('user', 'author')

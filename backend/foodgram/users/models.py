@@ -4,8 +4,8 @@ from django.db import models
 User = get_user_model()
 
 
-class Subscription(models.Model):
-    subscriber = models.ForeignKey(
+class Follow(models.Model):
+    user = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
         related_name='follower',
@@ -23,10 +23,14 @@ class Subscription(models.Model):
         verbose_name_plural = 'Подписки'
         constraints = (
             models.UniqueConstraint(
-                fields=('subscriber', 'author'),
+                fields=('user', 'author'),
                 name='uniq_follow',
-            )
+            ),
+            models.CheckConstraint(
+                check=~models.Q(user=models.F('author')),
+                name='self_following',
+            ),
         )
 
     def __str__(self):
-        return f'{self.subscriber} - {self.author}'
+        return f'{self.user} - {self.author}'
