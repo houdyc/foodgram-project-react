@@ -13,11 +13,10 @@ class CustomUserSerializer(UserSerializer):
         method_name='user_is_subscribed'
     )
 
-    def user_is_subscribed(self, obj):
-        user = self.context['request'].user
-        if user.is_anonymous:
-            return False
-        return Subscription.objects.filter(user=user, author=obj)
+    def get_is_subscribed(self, obj):
+        return obj.subscribing.filter(
+            user=self.context.get('request').user.id
+        ).exists()
 
     class Meta:
         model = User
@@ -26,6 +25,7 @@ class CustomUserSerializer(UserSerializer):
 
 
 class CreateUserSerializer(UserCreateSerializer):
+    password = serializers.CharField(write_only=True)
 
     class Meta:
         model = User
