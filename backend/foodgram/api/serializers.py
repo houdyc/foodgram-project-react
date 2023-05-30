@@ -1,11 +1,15 @@
+from django.contrib.auth import get_user_model
 from drf_base64.fields import Base64ImageField
 from rest_framework import serializers
 from rest_framework.fields import IntegerField
 from rest_framework.relations import PrimaryKeyRelatedField
 from users.serializers import CustomUserSerializer
+from users.models import Follow
 
 from .models import (FavoriteRecipe, Ingredient, IngredientRecipe, Recipe,
                      ShoppingList, Tag)
+
+User = get_user_model()
 
 
 class TagSerializer(serializers.ModelSerializer):
@@ -155,3 +159,33 @@ class RecipeShortSerializer(serializers.ModelSerializer):
     class Meta:
         model = Recipe
         fields = ('id', 'name', 'image', 'cooking_time')
+
+
+class FavouriteSerializer(serializers.ModelSerializer):
+    is_subscribed = serializers.SerializerMethodField()
+    recipes = serializers.SerializerMethodField()
+    recipes_count = serializers.SerializerMethodField()
+
+    class Meta:
+        fields = (
+            'email', 'id', 'username', 'first_name', 'last_name',
+            'is_subscribed', 'recipes', 'recipes_count'
+        )
+        model = User
+
+    def get_is_subscribed(self, obj):
+        request = self.context.get('request')
+        return request.user.is_authenticated and Follow.objects.filter(
+            user=request.user, author=obj
+        ).exists()
+
+    def get_recipes(self, obj):
+        request = self.context.get('request')
+        recipes_limit = request.query_params.get('recipes_limit')
+        queryset = Recipe.objects.filter(author=obj)
+        if recipes_limit:
+            queryset = queryset[:int(recipes_limit)]
+        return RecipeShortSerializer(queryset, many=True).data
+
+    def get_recipes_count(self, obj):
+        return Recipe.objects.filter(author=obj).count()
