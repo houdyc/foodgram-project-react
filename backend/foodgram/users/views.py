@@ -11,7 +11,7 @@ from users.serializers import SubscriptionSerializer
 
 
 class UsersViewSet(UserViewSet):
-    permission_classes = [IsAuthenticated]
+    http_method_names = ('get', 'post')
     pagination_class = [CustomPagination]
 
     @action(
