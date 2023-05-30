@@ -8,6 +8,18 @@ from .models import (FavoriteRecipe, Ingredient, IngredientRecipe, Recipe,
                      ShoppingList, Tag)
 
 
+class TagSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Tag
+        fields = '__all__'
+
+
+class IngredientSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Ingredient
+        fields = '__all__'
+
+
 class RecipeSerializer(serializers.ModelSerializer):
     image = Base64ImageField()
     author = CustomUserSerializer(default=serializers.CurrentUserDefault())
@@ -33,18 +45,6 @@ class RecipeSerializer(serializers.ModelSerializer):
         if user.is_anonymous:
             return False
         return ShoppingList.objects.filter(user=user, recipe=obj).exists()
-
-
-class TagSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Tag
-        fields = '__all__'
-
-
-class IngredientSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Ingredient
-        fields = '__all__'
 
 
 class RecipeIngredientsSerializer(serializers.ModelSerializer):
