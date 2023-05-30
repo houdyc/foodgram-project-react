@@ -1,5 +1,6 @@
 from drf_base64.fields import Base64ImageField
 from rest_framework import serializers
+from rest_framework.exceptions import ValidationError
 from rest_framework.fields import IntegerField
 from rest_framework.relations import PrimaryKeyRelatedField
 from users.serializers import CustomUserSerializer
@@ -151,3 +152,32 @@ class RecipeShortSerializer(serializers.ModelSerializer):
     class Meta:
         model = Recipe
         fields = ('id', 'name', 'image', 'cooking_time')
+
+
+class ShoppingCartSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = ShoppingList
+        fields = ('user', 'recipe')
+
+    def validate(self, data):
+        user = data['user']
+        if ShoppingList.objects.filter(recipe=data['recipe'],
+                                       user=user).exists():
+            raise ValidationError(
+                'Рецепт уже в списке покупок.')
+        return data
+
+
+class FavouriteSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = FavoriteRecipe
+        fields = ('user', 'recipe',)
+
+    def validate(self, data):
+        user = data['user']
+        if FavoriteRecipe.objects.filter(recipe=data['recipe'],
+                                         user=user).exists():
+            raise ValidationError('Рецепт уже в избранном.')
+        return data
