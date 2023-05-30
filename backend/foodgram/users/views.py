@@ -14,10 +14,6 @@ class UsersViewSet(UserViewSet):
     permission_classes = [IsAuthenticated]
     pagination_class = [CustomPagination]
 
-    @action(detail=True,
-            methods=('post', 'delete'),
-            serializer_class=SubscriptionSerializer,
-            )
     @action(
         detail=False,
         methods=('get',),
