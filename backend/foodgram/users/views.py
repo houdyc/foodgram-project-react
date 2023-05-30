@@ -4,7 +4,7 @@ from rest_framework import exceptions, status
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
-from users.models import Subscribe, User
+from users.models import Follow, User
 from users.pagination import CustomPagination
 from users.serializers import FollowSerializer
 
@@ -26,23 +26,23 @@ class UsersViewSet(UserViewSet):
                 raise exceptions.ValidationError(
                     'Нельзя подписываться на самого себя.'
                 )
-            if Subscribe.objects.filter(
+            if Follow.objects.filter(
                 user=user,
                 author=author,
             ).exists():
                 raise exceptions.ValidationError('Подписка уже существует.')
-            Subscribe.objects.create(user=user, author=author)
+            Follow.objects.create(user=user, author=author)
             serializer = self.get_serializer(author)
 
             return Response(serializer.data, status=status.HTTP_201_CREATED)
 
-        if not Subscribe.objects.filter(
+        if not Follow.objects.filter(
             user=user,
             author=author,
         ).exists():
             return Response(status=status.HTTP_204_NO_CONTENT)
 
-        follow = get_object_or_404(Subscribe, user=user, author=author)
+        follow = get_object_or_404(Follow, user=user, author=author)
         follow.delete()
 
         return Response(status=status.HTTP_204_NO_CONTENT)

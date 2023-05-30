@@ -2,26 +2,27 @@ from api.models import Recipe
 from django.contrib.auth import get_user_model
 from djoser.serializers import UserCreateSerializer, UserSerializer
 from rest_framework import serializers
-from users.models import Subscribe
+from users.models import Follow
 
 User = get_user_model()
 
 
 class CustomUserSerializer(UserSerializer):
-    first_name = serializers.CharField(required=True)
-    last_name = serializers.CharField(required=True)
-    is_subscribed = serializers.SerializerMethodField()
+    is_follow = serializers.SerializerMethodField(
+        read_only=True,
+        method_name='user_is_followed'
+    )
 
-    def user_is_subscribed(self, obj):
+    def user_is_followed(self, obj):
         user = self.context['request'].user
         if user.is_anonymous:
             return False
-        return Subscribe.objects.filter(user=user, author=obj)
+        return Follow.objects.filter(user=user, author=obj)
 
     class Meta:
         model = User
         fields = ('id', 'email', 'username', 'first_name',
-                  'last_name', 'is_subscribed')
+                  'last_name', 'is_follow')
 
 
 class CreateUserSerializer(UserCreateSerializer):
