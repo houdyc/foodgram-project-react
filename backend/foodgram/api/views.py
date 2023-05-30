@@ -3,8 +3,9 @@ from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
 from django_filters.rest_framework import DjangoFilterBackend
-from rest_framework import exceptions, status, viewsets
+from rest_framework import status, viewsets
 from rest_framework.decorators import action
+from rest_framework.exceptions import ValidationError
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from users.pagination import CustomPagination
@@ -40,7 +41,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
                     user=user,
                     recipe=recipe
             ).exists():
-                raise exceptions.ValidationError('Рецепт уже в избранном.')
+                raise ValidationError('Рецепт уже в избранном.')
             FavoriteRecipe.objects.create(user=user, recipe=recipe)
             serializer = RecipeShortSerializer(
                 recipe,
@@ -53,7 +54,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
                     user=user,
                     recipe=recipe
             ).exists():
-                raise exceptions.ValidationError(
+                raise ValidationError(
                     'Рецепта нет в избранном, либо он уже удален.'
                 )
             favorite = get_object_or_404(FavoriteRecipe, user=user,
@@ -72,7 +73,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
                     user=user,
                     recipe=recipe
             ).exists():
-                raise exceptions.ValidationError(
+                raise ValidationError(
                     'Рецепт уже в списке покупок.'
                 )
             ShoppingList.objects.create(user=user, recipe=recipe)
@@ -87,10 +88,9 @@ class RecipeViewSet(viewsets.ModelViewSet):
                     user=user,
                     recipe=recipe
             ).exists():
-                raise exceptions.ValidationError(
+                raise ValidationError(
                     'Рецепта нет в списке покупок, либо он уже удален.'
                 )
-
             shopping_cart = get_object_or_404(
                 ShoppingList,
                 user=user,
