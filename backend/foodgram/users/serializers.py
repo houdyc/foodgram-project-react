@@ -22,7 +22,7 @@ class CustomUserSerializer(UserSerializer):
     class Meta:
         model = User
         fields = ('id', 'email', 'username', 'first_name',
-                  'last_name', 'is_follow')
+                  'last_name', 'is_followed')
 
 
 class CreateUserSerializer(UserCreateSerializer):
@@ -47,7 +47,7 @@ class FollowSerializer(CustomUserSerializer):
     class Meta:
         model = User
         fields = ('id', 'email', 'username', 'first_name',
-                  'last_name', 'is_follow', 'recipes', 'recipes_count')
+                  'last_name', 'is_followed', 'recipes', 'recipes_count')
 
     def get_recipes(self, obj):
         request = self.context.get('request')
