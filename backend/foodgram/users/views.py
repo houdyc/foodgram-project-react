@@ -4,7 +4,7 @@ from rest_framework import exceptions, status
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
-from users.models import Subscription, User
+from users.models import Follow, User
 from users.pagination import CustomPagination
 from users.serializers import FollowSerializer
 
@@ -17,7 +17,7 @@ class UsersViewSet(UserViewSet):
             methods=('post', 'delete'),
             serializer_class=FollowSerializer,
             )
-    def subscription(self, request, id=None):
+    def follow(self, request, id=None):
         user = self.request.user
         author = get_object_or_404(User, pk=id)
 
@@ -26,25 +26,24 @@ class UsersViewSet(UserViewSet):
                 raise exceptions.ValidationError(
                     'Нельзя подписываться на самого себя.'
                 )
-            if Subscription.objects.filter(
+            if Follow.objects.filter(
                 user=user,
                 author=author,
             ).exists():
                 raise exceptions.ValidationError('Подписка уже существует.')
-            Subscription.objects.create(user=user, author=author)
+            Follow.objects.create(user=user, author=author)
             serializer = self.get_serializer(author)
 
             return Response(serializer.data, status=status.HTTP_201_CREATED)
 
-        if not Subscription.objects.filter(
+        if not Follow.objects.filter(
             user=user,
             author=author,
         ).exists():
             return Response(status=status.HTTP_204_NO_CONTENT)
 
-        subscription = get_object_or_404(Subscription, user=user,
-                                         author=author)
-        subscription.delete()
+        follow = get_object_or_404(Follow, user=user, author=author)
+        follow.delete()
 
         return Response(status=status.HTTP_204_NO_CONTENT)
 
@@ -54,9 +53,9 @@ class UsersViewSet(UserViewSet):
         serializer_class=FollowSerializer,
         permission_classes=(IsAuthenticated,)
     )
-    def subscriptions(self, request):
+    def follows(self, request):
         user = self.request.user
-        authors = user.objects.values('author', 'subscription')
+        authors = user.objects.values('author', 'follow')
         queryset = User.objects.filter(pk__in=authors)
         paginated_queryset = self.paginate_queryset(queryset)
         serializer = self.get_serializer(paginated_queryset, many=True)

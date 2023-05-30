@@ -4,17 +4,17 @@ from django.db import models
 User = get_user_model()
 
 
-class Subscription(models.Model):
+class Follow(models.Model):
     user = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
-        related_name='subscriber',
+        related_name='follower',
         verbose_name='Подписчик',
     )
     author = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
-        related_name='subscribing',
+        related_name='following',
         verbose_name='Автор рецепта',
     )
 
@@ -24,11 +24,11 @@ class Subscription(models.Model):
         constraints = (
             models.UniqueConstraint(
                 fields=('user', 'author'),
-                name='uniq_subscribe',
+                name='uniq_follow',
             ),
             models.CheckConstraint(
                 check=~models.Q(user=models.F('author')),
-                name='self_subscribed',
+                name='self_following',
             ),
         )
 
