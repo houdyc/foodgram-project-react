@@ -36,31 +36,30 @@ class CreateUserSerializer(UserCreateSerializer):
 
 class SubscriptionSerializer(CustomUserSerializer):
     recipes = serializers.SerializerMethodField(method_name='get_recipes')
-    recipes_count = serializers.SerializerMethodField(
-        method_name='get_recipes_count'
-    )
+    recipes_count = serializers.SerializerMethodField()
+    id = serializers.IntegerField(default=serializers.CurrentUserDefault())
 
-    def get_data(self):
-        return RecipeShortSerializer
+    def validate_id(self, value):
+        if self.instance.id == value.id:
+            raise serializers.ValidationError(
+                'Нельзя подписываться на самого себя.'
+            )
+        return value
 
     def get_recipes(self, obj):
-        author_recipes = Recipe.objects.filter(author=obj)
-
-        if 'recipes_limit' in self.context.get('request').GET:
-            recipes_limit = self.context.get('request').GET['recipes_limit']
-            author_recipes = author_recipes[:int(recipes_limit)]
-
-        if author_recipes:
-            serializer = self.get_data()(
-                author_recipes,
-                context={'request': self.context.get('request')},
-                many=True
-            )
-            return serializer.data
-        return []
+        request = self.context.get('request')
+        queryset = obj.recipes.all()
+        recipes_limit = request.query_params.get('recipes_limit')
+        if recipes_limit:
+            queryset = queryset[:int(recipes_limit)]
+        serializer = RecipeShortSerializer(
+            queryset,
+            many=True
+        )
+        return serializer.data
 
     def get_recipes_count(self, obj):
-        return Recipe.objects.filter(author=obj).count()
+        return obj.recipes.count()
 
     class Meta:
         model = User
