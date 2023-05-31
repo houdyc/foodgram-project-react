@@ -13,6 +13,20 @@ class UsersViewSet(UserViewSet):
     permission_classes = [IsAuthenticated]
     pagination_class = [CustomPagination]
 
+    @action(
+        detail=False,
+        methods=('get',),
+        permission_classes=(IsAuthenticated,)
+    )
+    def me(self, request):
+        serializer = self.get_serializer(request.user)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    def retrieve(self, request, *args, **kwargs):
+        user = get_object_or_404(User, pk=kwargs.get('id'))
+        serializer = self.get_serializer(user)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
     @action(detail=True,
             methods=('post', 'delete'),
             serializer_class=SubscribeSerializer,
