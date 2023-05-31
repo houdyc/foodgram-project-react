@@ -21,7 +21,7 @@ services:
       - ./.env
 
   frontend:
-    image: loren166/foodgram_frontend:latest
+    image: loren166/foodgram_frontend:latest 
     volumes:
       - ../frontend/:/app/result_build/
     depends_on:
