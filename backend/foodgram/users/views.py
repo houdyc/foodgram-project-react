@@ -34,7 +34,7 @@ class UsersViewSet(UserViewSet):
             methods=('post', 'delete'),
             serializer_class=SubscribeSerializer,
             )
-    def subscribe(self, request, id=None):
+    def subscribe(self, request, id):
         user = self.request.user
         author = get_object_or_404(User, pk=id)
 
