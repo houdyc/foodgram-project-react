@@ -12,6 +12,7 @@ from users.serializers import CustomUserSerializer
 
 class UsersViewSet(UserViewSet):
     permission_classes = [IsAuthenticated]
+    serializer_class = CustomUserSerializer
     pagination_class = [CustomPagination]
 
     @action(
