@@ -7,6 +7,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from users.models import Subscribe, User
 from users.pagination import CustomPagination
+from users.serializers import CustomUserSerializer
 
 
 class UsersViewSet(UserViewSet):
@@ -14,18 +15,19 @@ class UsersViewSet(UserViewSet):
     pagination_class = [CustomPagination]
 
     @action(
+        methods=['GET'],
         detail=False,
-        methods=('get',),
-        permission_classes=(IsAuthenticated,)
-    )
-    def me(self, request):
-        serializer = self.get_serializer(request.user)
-        return Response(serializer.data, status=status.HTTP_200_OK)
-
-    def retrieve(self, request, *args, **kwargs):
-        user = get_object_or_404(User, pk=kwargs.get('id'))
-        serializer = self.get_serializer(user)
-        return Response(serializer.data, status=status.HTTP_200_OK)
+        permission_classes=(IsAuthenticated,))
+    def me(self, request, pk=None):
+        if request.method == 'GET':
+            serializer = self.get_serializer(request.user)
+            return Response(serializer.data)
+        serializer = CustomUserSerializer(
+            request.user,
+            data=request.data,
+            partial=True)
+        serializer.is_valid(raise_exception=True)
+        return Response(serializer.data)
 
     @action(detail=True,
             methods=('post', 'delete'),
