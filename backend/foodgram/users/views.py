@@ -1,7 +1,7 @@
 from api.serializers import (SubscribeSerializer, SubscribeUserSerializer)
 from django.shortcuts import get_object_or_404
 from djoser.views import UserViewSet
-from rest_framework import status, mixins, viewsets
+from rest_framework import mixins, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
@@ -44,7 +44,8 @@ class SubscribeView(APIView):
         return Response(data=serializer.data, status=status.HTTP_201_CREATED)
 
     def delete(self, request, user_id):
-        follow = get_object_or_404(Subscribe, author=user_id, user=request.user)
+        follow = get_object_or_404(Subscribe, author=user_id,
+                                   user=request.user)
         follow.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
