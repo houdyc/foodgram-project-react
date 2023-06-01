@@ -30,10 +30,8 @@ class RecipeSerializer(serializers.ModelSerializer):
     author = CustomUserSerializer(default=serializers.CurrentUserDefault())
     ingredients = IngredientSerializer(many=True)
     tags = TagSerializer(many=True)
-    is_favorited = serializers.SerializerMethodField(
-        method_name='get_is_favorited')
-    is_in_shopping_cart = serializers.SerializerMethodField(
-        method_name='get_is_in_shopping_cart')
+    is_favorited = serializers.SerializerMethodField()
+    is_in_shopping_cart = serializers.SerializerMethodField()
 
     class Meta:
         model = Recipe

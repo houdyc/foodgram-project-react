@@ -5,7 +5,7 @@ from django.utils import timezone
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated, SAFE_METHODS
 from rest_framework.response import Response
 from users.pagination import CustomPagination
 from users.permissions import IsAdminOrReadOnly, IsAuthorOrReadOnly
@@ -26,9 +26,9 @@ class RecipeViewSet(viewsets.ModelViewSet):
     filterset_class = RecipeFilter
 
     def get_serializer_class(self):
-        if self.action in ('create', 'partial_update'):
-            return RecipeWriteSerializer
-        return RecipeSerializer
+        if self.request.method in SAFE_METHODS:
+            return RecipeSerializer
+        return RecipeWriteSerializer
 
     def create_or_delete(self, request, pk, model, serializer, message):
         user = request.user
