@@ -1,4 +1,4 @@
-from api.serializers import (SubscribeSerializer, SubscribeUserSerializer)
+from api.serializers import (SubscribeUserSerializer, SubscribeSerializer)
 from django.shortcuts import get_object_or_404
 from djoser.views import UserViewSet
 from rest_framework import mixins, status, viewsets
