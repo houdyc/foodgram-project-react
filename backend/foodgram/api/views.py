@@ -1,24 +1,26 @@
 from django.db.models import Sum
 from django.http import HttpResponse
+from django.shortcuts import get_object_or_404
 from django.utils import timezone
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
+from users.pagination import CustomPagination
 from users.permissions import IsAdminOrReadOnly, IsAuthorOrReadOnly
 
 from .filters import IngredientFilter, RecipeFilter
 from .models import (FavoriteRecipe, Ingredient, IngredientRecipe, Recipe,
                      ShoppingList, Tag)
 from .serializers import (IngredientSerializer, RecipeSerializer,
-                          RecipeShortSerializer, RecipeWriteSerializer,
-                          TagSerializer)
-from .utils import delete, post
+                          FavoriteSerializer, RecipeWriteSerializer,
+                          ShoppingCartSerializer, TagSerializer)
 
 
 class RecipeViewSet(viewsets.ModelViewSet):
     queryset = Recipe.objects.all()
+    pagination_class = CustomPagination
     permission_classes = [IsAuthorOrReadOnly]
     filter_backends = [DjangoFilterBackend]
     filterset_class = RecipeFilter
@@ -28,35 +30,47 @@ class RecipeViewSet(viewsets.ModelViewSet):
             return RecipeWriteSerializer
         return RecipeSerializer
 
-    @action(
-        detail=True,
-        methods=['POST', 'DELETE'],
-        permission_classes=[IsAuthenticated]
-    )
-    def favorite(self, request, pk=None):
+    def create_or_delete(self, request, pk, model, serializer, message):
+        user = request.user
+        recipe = get_object_or_404(Recipe, pk=pk)
+        instance = model.objects.filter(user=user, recipe=recipe)
         if request.method == 'POST':
-            return post(
-                request, pk, Recipe,
-                FavoriteRecipe, RecipeShortSerializer
-            )
+            data = {
+                'user': user.id,
+                'recipe': recipe.id
+            }
+            serializer = serializer(data=data, context={'request': request})
+            serializer.is_valid(raise_exception=True)
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
         if request.method == 'DELETE':
-            return delete(request, pk, Recipe, FavoriteRecipe)
-        return Response(status=status.HTTP_400_BAD_REQUEST)
+            if not instance.exists():
+                return Response(message, status=status.HTTP_400_BAD_REQUEST)
+            instance.delete()
+            return Response(status=status.HTTP_204_NO_CONTENT)
+        return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
 
-    @action(
-        detail=True,
-        methods=['POST', 'DELETE'],
-        permission_classes=[IsAuthenticated]
-    )
+    @action(detail=True, methods=['post', 'delete'],
+            permission_classes=[IsAuthenticated])
+    def favorite(self, request, pk=None):
+        return self.create_or_delete(
+            request=request,
+            pk=pk,
+            model=FavoriteRecipe,
+            serializer=FavoriteSerializer,
+            message={'errors': 'Рецепта нет в избранном!'}
+        )
+
+    @action(detail=True, methods=['post', 'delete'],
+            permission_classes=[IsAuthenticated])
     def shopping_cart(self, request, pk=None):
-        if request.method == 'POST':
-            return post(
-                request, pk, Recipe,
-                ShoppingList, RecipeShortSerializer
-            )
-        if request.method == 'DELETE':
-            return delete(request, pk, Recipe, ShoppingList)
-        return Response(status=status.HTTP_400_BAD_REQUEST)
+        return self.create_or_delete(
+            request=request,
+            pk=pk,
+            model=ShoppingList,
+            serializer=ShoppingCartSerializer,
+            message={'errors': 'Рецепта нет в списке покупок!'}
+        )
 
     @action(
         detail=False,

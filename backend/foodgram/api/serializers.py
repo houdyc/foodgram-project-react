@@ -216,3 +216,51 @@ class SubscribeUserSerializer(serializers.ModelSerializer):
         return SubscribeSerializer(
             instance, context={'request': request}
         ).data
+
+
+class FavoriteSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = FavoriteRecipe
+        fields = '__all__'
+        validators = [
+            UniqueTogetherValidator(
+                queryset=FavoriteRecipe.objects.all(),
+                fields=('user', 'recipe'),
+                message='Рецепт уже в избранном!'
+            ),
+        ]
+
+    def create(self, validated_data):
+        return FavoriteRecipe.objects.create(**validated_data)
+
+    def to_representation(self, instance):
+        return RecipeShortSerializer(
+            instance.recipe,
+            context={
+                'request': self.context.get('request')
+            }).data
+
+
+class ShoppingCartSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = ShoppingList
+        fields = '__all__'
+        validators = [
+            UniqueTogetherValidator(
+                queryset=ShoppingList.objects.all(),
+                fields=('user', 'recipe'),
+                message='Рецепт уже в списке покупок!'
+            ),
+        ]
+
+    def create(self, validated_data):
+        return ShoppingList.objects.create(**validated_data)
+
+    def to_representation(self, instance):
+        return RecipeShortSerializer(
+            instance.recipe,
+            context={
+                'request': self.context.get('request')
+            }).data
