@@ -57,7 +57,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
             request=request,
             pk=pk,
             model=FavoriteRecipe,
-            serializer=FavoriteSerializer,
+            serializer=RecipeSerializer,
             message={'errors': 'Рецепта нет в избранном!'}
         )
 
@@ -68,7 +68,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
             request=request,
             pk=pk,
             model=ShoppingList,
-            serializer=ShoppingCartSerializer,
+            serializer=RecipeSerializer,
             message={'errors': 'Рецепта нет в списке покупок!'}
         )
 
