@@ -13,8 +13,9 @@ from users.permissions import IsAdminOrReadOnly, IsAuthorOrReadOnly
 from .filters import IngredientFilter, RecipeFilter
 from .models import (FavoriteRecipe, Ingredient, IngredientRecipe, Recipe,
                      ShoppingList, Tag)
-from .serializers import (IngredientSerializer, RecipeSerializer,
-                          RecipeWriteSerializer, TagSerializer)
+from .serializers import (FavoriteSerializer, IngredientSerializer,
+                          RecipeSerializer, RecipeWriteSerializer,
+                          ShoppingCartSerializer, TagSerializer)
 
 
 class RecipeViewSet(viewsets.ModelViewSet):
@@ -56,7 +57,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
             request=request,
             pk=pk,
             model=FavoriteRecipe,
-            serializer=RecipeSerializer,
+            serializer=FavoriteSerializer,
             message={'errors': 'Рецепта нет в избранном!'}
         )
 
@@ -67,7 +68,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
             request=request,
             pk=pk,
             model=ShoppingList,
-            serializer=RecipeSerializer,
+            serializer=ShoppingCartSerializer,
             message={'errors': 'Рецепта нет в списке покупок!'}
         )
 
