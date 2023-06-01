@@ -13,9 +13,8 @@ from users.permissions import IsAdminOrReadOnly, IsAuthorOrReadOnly
 from .filters import IngredientFilter, RecipeFilter
 from .models import (FavoriteRecipe, Ingredient, IngredientRecipe, Recipe,
                      ShoppingList, Tag)
-from .serializers import (FavoriteSerializer, IngredientSerializer,
-                          RecipeSerializer, RecipeWriteSerializer,
-                          ShoppingCartSerializer, TagSerializer)
+from .serializers import (IngredientSerializer, RecipeSerializer,
+                          RecipeWriteSerializer, TagSerializer)
 
 
 class RecipeViewSet(viewsets.ModelViewSet):
