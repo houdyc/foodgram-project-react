@@ -6,7 +6,6 @@ from rest_framework import status, viewsets
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
-from users.pagination import CustomPagination
 from users.permissions import IsAdminOrReadOnly, IsAuthorOrReadOnly
 
 from .filters import IngredientFilter, RecipeFilter
@@ -20,7 +19,6 @@ from .utils import delete, post
 
 class RecipeViewSet(viewsets.ModelViewSet):
     queryset = Recipe.objects.all()
-    pagination_class = CustomPagination
     permission_classes = [IsAuthorOrReadOnly]
     filter_backends = [DjangoFilterBackend]
     filterset_class = RecipeFilter
