@@ -1,4 +1,4 @@
-from api.serializers import (SubscribeUserSerializer, SubscribeSerializer)
+from api.serializers import SubscribeSerializer, SubscribeUserSerializer
 from django.shortcuts import get_object_or_404
 from djoser.views import UserViewSet
 from rest_framework import mixins, status, viewsets
@@ -33,7 +33,7 @@ class UsersViewSet(UserViewSet):
 
 
 class SubscribeView(APIView):
-    permission_classes = (IsAuthenticated,)
+    permission_classes = [IsAuthenticated]
 
     def post(self, request, user_id):
         serializer = SubscribeUserSerializer(
@@ -52,7 +52,7 @@ class SubscribeView(APIView):
 
 class SubscriptionsList(mixins.ListModelMixin, viewsets.GenericViewSet):
     serializer_class = SubscribeSerializer
-    permission_classes = (IsAuthenticated,)
+    permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
         return Subscribe.objects.filter(user=self.request.user)
