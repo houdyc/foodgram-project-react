@@ -19,7 +19,7 @@ class UsersViewSet(UserViewSet):
     @action(
         methods=['GET'],
         detail=False,
-        permission_classes=(IsAuthenticated,))
+        permission_classes=[IsAuthenticated])
     def me(self, request, pk=None):
         if request.method == 'GET':
             serializer = self.get_serializer(request.user)

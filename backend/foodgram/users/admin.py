@@ -5,7 +5,7 @@ from .models import Subscribe
 
 
 @admin.register(Subscribe)
-class FollowAdmin(admin.ModelAdmin):
+class SubscribeAdmin(admin.ModelAdmin):
     list_display = ('id', 'user', 'author')
     search_fields = ('user', 'author')
 
