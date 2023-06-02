@@ -198,7 +198,7 @@ class SubscribeUserSerializer(serializers.ModelSerializer):
             UniqueTogetherValidator(
                 queryset=Subscribe.objects.all(),
                 fields=('user', 'author',),
-                message='Вы уже подписаны на данного пользователя'
+                message='Вы уже подписаны на данного пользователя.'
             )
         ]
 
@@ -225,7 +225,7 @@ class FavoriteSerializer(serializers.ModelSerializer):
             UniqueTogetherValidator(
                 queryset=FavoriteRecipe.objects.all(),
                 fields=('user', 'recipe'),
-                message='Рецепт уже в избранном!'
+                message='Рецепт уже в избранном.'
             ),
         ]
 
@@ -249,7 +249,7 @@ class ShoppingCartSerializer(serializers.ModelSerializer):
             UniqueTogetherValidator(
                 queryset=ShoppingList.objects.all(),
                 fields=('user', 'recipe'),
-                message='Рецепт уже в списке покупок!'
+                message='Рецепт уже в списке покупок.'
             ),
         ]
 
