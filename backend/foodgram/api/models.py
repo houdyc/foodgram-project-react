@@ -133,6 +133,10 @@ class IngredientRecipe(models.Model):
         verbose_name = 'Ингредиент в рецепте'
         verbose_name_plural = 'Ингредиенты в рецепте'
 
+    def __str__(self):
+        return (f'{self.ingredient.name} ({self.ingredient.measurement_unit})'
+                f' - {self.amount}')
+
 
 class FavoriteRecipe(models.Model):
     recipe = models.ForeignKey(

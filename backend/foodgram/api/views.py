@@ -9,7 +9,8 @@ from users.pagination import CustomPagination
 from users.permissions import IsAdminOrReadOnly, IsAuthorOrReadOnly
 
 from .filters import IngredientFilter, RecipeFilter
-from .models import FavoriteRecipe, Ingredient, Recipe, ShoppingList, Tag
+from .models import (FavoriteRecipe, Ingredient, IngredientRecipe, Recipe,
+                     ShoppingList, Tag)
 from .serializers import (FavoriteSerializer, IngredientSerializer,
                           RecipeSerializer, RecipeWriteSerializer,
                           ShoppingCartSerializer, TagSerializer)
@@ -76,7 +77,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
         permission_classes=[IsAuthenticated]
     )
     def download_shopping_cart(self, request):
-        ingredients = Recipe.objects.filter(
+        ingredients = IngredientRecipe.objects.filter(
             recipe__shop_list__user=self.request.user
         ).values(
             'ingredient__name',
