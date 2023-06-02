@@ -1,5 +1,4 @@
-from django.db.models import F, Sum
-from django.http import HttpResponse
+from django.db.models import Sum
 from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import status, viewsets
@@ -10,10 +9,12 @@ from users.pagination import CustomPagination
 from users.permissions import IsAdminOrReadOnly, IsAuthorOrReadOnly
 
 from .filters import IngredientFilter, RecipeFilter
-from .models import FavoriteRecipe, Ingredient, Recipe, ShoppingList, Tag
+from .models import (FavoriteRecipe, Ingredient, IngredientRecipe,
+                     Recipe, ShoppingList, Tag)
 from .serializers import (FavoriteSerializer, IngredientSerializer,
                           RecipeSerializer, RecipeWriteSerializer,
                           ShoppingCartSerializer, TagSerializer)
+from .utils import make_txt_response
 
 
 class RecipeViewSet(viewsets.ModelViewSet):
@@ -70,26 +71,19 @@ class RecipeViewSet(viewsets.ModelViewSet):
             message={'errors': 'Рецепта нет в списке покупок!'}
         )
 
-    @action(detail=False,
-            permission_classes=[IsAuthenticated])
+    @action(
+        detail=False,
+        methods=['GET'],
+        permission_classes=[IsAuthenticated]
+    )
     def download_shopping_cart(self, request):
-        ingredients = Recipe.objects.filter(
-            recipe__shopping_cart__user=request.user
+        ingredients = IngredientRecipe.objects.filter(
+            recipe__shop_list__user=self.request.user
         ).values(
-            'name',
-            measurement=F('measurement_unit')
-        ).annotate(total=Sum('ingredients_list__amount')).order_by('-total')
-        shopping_list = ['Список покупок: ', ]
-        for num, item in enumerate(ingredients):
-            shopping_list.append(
-                f'{num + 1}. {item["name"]} = '
-                f'{item["total"]} {item["measurement"]}'
-            )
-        text = '\n'.join(shopping_list)
-        filename = 'foodgram_shopping_list.txt'
-        response = HttpResponse(text, content_type='text/plain')
-        response['Content-Disposition'] = f'attachment; filename={filename}'
-        return response
+            'ingredient__name',
+            'ingredient__measurement_unit'
+        ).order_by('ingredient__name').annotate(amount=Sum('amount'))
+        return make_txt_response(ingredients)
 
 
 class PermissionAndPaginationMixin:
