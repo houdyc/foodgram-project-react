@@ -78,15 +78,15 @@ class RecipeViewSet(viewsets.ModelViewSet):
     )
     def download_shopping_list(self, request):
         user = request.user
-        if not user.shopping_cart.exists():
+        if not user.shopping_list.exists():
             return Response(status=status.HTTP_400_BAD_REQUEST)
 
         ingredients = IngredientRecipe.objects.filter(
-            recipe__shopping_list__user=request.user
+            recipe__shoppinglist__user=request.user
         ).values(
             'ingredient__name',
             'ingredient__measurement_unit'
-        ).annotate(ingredients_amount=Sum('amount'))
+        ).annotate(amount=Sum('amount'))
 
         today = timezone.localtime(timezone.now())
         shopping_list = (
@@ -96,7 +96,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
         shopping_list += '\n'.join([
             f'- {ingredient["ingredient__name"]} '
             f'({ingredient["ingredient__measurement_unit"]})'
-            f' - {ingredient["ingredients_amount"]}'
+            f' - {ingredient["amount"]}'
             for ingredient in ingredients
         ])
         shopping_list += f'\n\nFoodgram ({today:%Y})'
