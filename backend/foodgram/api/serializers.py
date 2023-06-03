@@ -53,20 +53,11 @@ class RecipeSerializer(serializers.ModelSerializer):
 
 
 class RecipeIngredientsSerializer(serializers.ModelSerializer):
-    id = serializers.SerializerMethodField(method_name='get_id')
-    name = serializers.SerializerMethodField(method_name='get_name')
+    id = serializers.SerializerMethodField(source='ingredient.id')
+    name = serializers.SerializerMethodField(source='ingredient.name')
     measurement_unit = serializers.SerializerMethodField(
-        method_name='get_measurement_unit'
+        source='ingredient.measurement_unit'
     )
-
-    def get_id(self, obj):
-        return obj.ingredient.id
-
-    def get_name(self, obj):
-        return obj.ingredient.name
-
-    def get_measurement_unit(self, obj):
-        return obj.ingredient.measurement_unit
 
     class Meta:
         model = IngredientRecipe
@@ -74,8 +65,6 @@ class RecipeIngredientsSerializer(serializers.ModelSerializer):
 
 
 class IngredientWriteSerializer(serializers.ModelSerializer):
-    id = IntegerField()
-    amount = IntegerField()
 
     class Meta:
         model = Ingredient
@@ -122,7 +111,7 @@ class RecipeWriteSerializer(serializers.ModelSerializer):
         IngredientRecipe.objects.bulk_create(
             [IngredientRecipe(
                 recipe=recipe,
-                ingredient=Ingredient.objects.get(pk=ingredient['id']),
+                ingredient_id=ingredient['id'],
                 amount=ingredient['amount']
             ) for ingredient in ingredients]
         )
@@ -167,7 +156,7 @@ class SubscribeSerializer(serializers.ModelSerializer):
     first_name = serializers.ReadOnlyField(source='author.first_name')
     last_name = serializers.ReadOnlyField(source='author.last_name')
     is_subscribed = serializers.SerializerMethodField()
-    recipes = serializers.SerializerMethodField()
+    recipes = RecipeShortSerializer(many=True)
     recipes_count = serializers.SerializerMethodField()
 
     class Meta:
@@ -180,10 +169,6 @@ class SubscribeSerializer(serializers.ModelSerializer):
     def get_is_subscribed(self, obj):
         return Subscribe.objects.filter(author=obj.author, user=obj.user
                                         ).exists()
-
-    def get_recipes(self, obj):
-        queryset = Recipe.objects.filter(author=obj.author)
-        return RecipeShortSerializer(queryset, many=True).data
 
     def get_recipes_count(self, obj):
         return Recipe.objects.filter(author=obj.author).count()
@@ -229,9 +214,6 @@ class FavoriteSerializer(serializers.ModelSerializer):
             ),
         ]
 
-    def create(self, validated_data):
-        return FavoriteRecipe.objects.create(**validated_data)
-
     def to_representation(self, instance):
         return RecipeShortSerializer(
             instance.recipe,
@@ -252,9 +234,6 @@ class ShoppingCartSerializer(serializers.ModelSerializer):
                 message='Рецепт уже в списке покупок.'
             ),
         ]
-
-    def create(self, validated_data):
-        return ShoppingList.objects.create(**validated_data)
 
     def to_representation(self, instance):
         return RecipeShortSerializer(
