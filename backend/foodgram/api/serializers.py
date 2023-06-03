@@ -65,12 +65,10 @@ class RecipeIngredientsSerializer(serializers.ModelSerializer):
 
 
 class IngredientWriteSerializer(serializers.ModelSerializer):
-    amount = IntegerField()
-    id = IntegerField()
 
     class Meta:
         model = Ingredient
-        fields = ('id', 'amount')
+        fields = ('name', 'measurement_unit')
 
 
 class RecipeWriteSerializer(serializers.ModelSerializer):
@@ -113,7 +111,7 @@ class RecipeWriteSerializer(serializers.ModelSerializer):
         IngredientRecipe.objects.bulk_create(
             [IngredientRecipe(
                 recipe=recipe,
-                ingredient=ingredient['id'],
+                ingredients=ingredient['id'],
                 amount=ingredient['amount']
             ) for ingredient in ingredients]
         )
