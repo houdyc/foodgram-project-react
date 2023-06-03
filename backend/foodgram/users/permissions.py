@@ -12,6 +12,7 @@ class IsAuthorOrReadOnly(permissions.BasePermission):
 
 
 class IsAdminOrReadOnly(permissions.BasePermission):
+    """Проверка пользователя на админа."""
     def has_permission(self, request, view):
         return (
             request.method in permissions.SAFE_METHODS
