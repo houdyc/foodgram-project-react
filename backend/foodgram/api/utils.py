@@ -8,7 +8,7 @@ def make_txt_response(ingredients):
         shopping_list += (
             f'{ingredient["ingredient__name"]}: '
             f'({ingredient["ingredient__measurement_unit"]})'
-            f' - {ingredient["amount"]} \n'
+            f' - {ingredient["count"]} \n'
         )
     now = timezone.now()
     file_name = f'ingredients list{now:%Y-%m-%d}'
