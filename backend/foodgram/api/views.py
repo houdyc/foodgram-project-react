@@ -42,12 +42,10 @@ class RecipeViewSet(viewsets.ModelViewSet):
             serializer.is_valid(raise_exception=True)
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
-        if request.method == 'DELETE':
-            if not instance.exists():
-                return Response(message, status=status.HTTP_400_BAD_REQUEST)
-            instance.delete()
-            return Response(status=status.HTTP_204_NO_CONTENT)
-        return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
+        if not instance.exists():
+            return Response(message, status=status.HTTP_400_BAD_REQUEST)
+        instance.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
     @action(detail=True, methods=['post', 'delete'],
             permission_classes=[IsAuthenticated])
@@ -82,7 +80,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
         ).values(
             'ingredient__name',
             'ingredient__measurement_unit'
-        ).order_by('ingredient__name').annotate(amount=Sum('amount'))
+        ).order_by('ingredient__name').annotate(count=Sum('amount'))
         return make_txt_response(ingredients)
 
 
