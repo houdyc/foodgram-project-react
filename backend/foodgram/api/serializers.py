@@ -112,7 +112,7 @@ class RecipeWriteSerializer(serializers.ModelSerializer):
             [IngredientRecipe(
                 recipe=recipe,
                 ingredient=ingredient['id'],
-                amount=ingredient['amount']
+                amount=ingredient['measurement_unit']
             ) for ingredient in ingredients]
         )
 
