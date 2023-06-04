@@ -150,7 +150,7 @@ class RecipeShortSerializer(serializers.ModelSerializer):
         fields = ('id', 'name', 'image', 'cooking_time')
 
 
-class SubscribeSerializer(CustomUserSerializer):
+class SubscribeSerializer(serializers.ModelSerializer):
     email = serializers.ReadOnlyField(source='author.email')
     id = serializers.ReadOnlyField(source='author.id')
     username = serializers.ReadOnlyField(source='author.username')
@@ -173,6 +173,13 @@ class SubscribeSerializer(CustomUserSerializer):
 
     def get_recipes_count(self, obj):
         return Recipe.objects.filter(author=obj.author).count()
+
+    def to_representation(self, instance):
+        response = super().to_representation(instance)
+        request = self.context.get('request')
+        limit = request.GET.get('recipes_limit', 3)
+        response['recipes'] = response['recipes'][:int(limit)]
+        return response
 
 
 class SubscribeUserSerializer(serializers.ModelSerializer):
