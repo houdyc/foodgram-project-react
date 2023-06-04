@@ -65,7 +65,6 @@ class RecipeIngredientsSerializer(serializers.ModelSerializer):
 
 
 class IngredientWriteSerializer(serializers.ModelSerializer):
-    id = IntegerField()
 
     class Meta:
         model = IngredientRecipe
