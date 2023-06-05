@@ -6,7 +6,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from api.serializers import SubscribeUserSerializer
+from api.serializers import SubscribeSerializer
 from users.models import Subscribe
 from users.pagination import CustomPagination
 from users.serializers import CustomUserSerializer
@@ -37,7 +37,7 @@ class SubscribeView(APIView):
     permission_classes = [IsAuthenticated]
 
     def post(self, request, user_id):
-        serializer = SubscribeUserSerializer(
+        serializer = SubscribeSerializer(
             data={'user': request.user.id, 'author': user_id}
         )
         serializer.is_valid(raise_exception=True)
@@ -52,7 +52,7 @@ class SubscribeView(APIView):
 
 
 class SubscriptionsList(mixins.ListModelMixin, viewsets.GenericViewSet):
-    serializer_class = SubscribeUserSerializer
+    serializer_class = SubscribeSerializer
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
