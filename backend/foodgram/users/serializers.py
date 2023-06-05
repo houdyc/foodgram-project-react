@@ -9,7 +9,8 @@ class CustomUserSerializer(UserSerializer):
     is_subscribed = serializers.SerializerMethodField()
 
     def get_is_subscribed(self, obj):
-        return obj.subscriber.filter(
+        user = self.context["request"].user
+        return user.subscriber.filter(
             user=self.context.get('request').user.id
         ).exists()
 
