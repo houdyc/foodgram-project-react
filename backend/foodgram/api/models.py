@@ -114,7 +114,6 @@ class IngredientRecipe(models.Model):
     )
     ingredient = models.ManyToManyField(
         Ingredient,
-        on_delete=models.CASCADE,
         verbose_name='Ингредиент'
     )
     amount = models.PositiveSmallIntegerField(
