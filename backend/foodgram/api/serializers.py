@@ -75,7 +75,7 @@ class RecipeWriteSerializer(serializers.ModelSerializer):
     author = CustomUserSerializer(read_only=True)
     tags = PrimaryKeyRelatedField(queryset=Tag.objects.all(), many=True)
     image = Base64ImageField(max_length=None, use_url=True)
-    ingredients = IngredientWriteSerializer(many=True)
+    ingredient = IngredientWriteSerializer(many=True)
     cooking_time = IntegerField()
 
     class Meta:
