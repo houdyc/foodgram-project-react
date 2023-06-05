@@ -66,7 +66,7 @@ class RecipeIngredientsSerializer(serializers.ModelSerializer):
 
 class IngredientWriteSerializer(serializers.ModelSerializer):
     id = IntegerField()
-    
+
     class Meta:
         model = IngredientRecipe
         fields = ('id', 'amount')
@@ -165,10 +165,6 @@ class SubscribeSerializer(serializers.ModelSerializer):
     def get_is_subscribed(self, obj):
         return Subscribe.objects.filter(author=obj.author, user=obj.user
                                         ).exists()
-
-    def get_recipes(self, obj):
-        queryset = Recipe.objects.filter(author=obj.author)
-        return RecipeShortSerializer(queryset, many=True).data
 
     def get_recipes_count(self, obj):
         return Recipe.objects.filter(author=obj.author).count()
