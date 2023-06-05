@@ -9,10 +9,9 @@ class CustomUserSerializer(UserSerializer):
     is_subscribed = serializers.SerializerMethodField()
 
     def get_is_subscribed(self, obj):
-        user = self.context["request"].user
-        return (user.is_authenticated and user.subscriber.filter(author=obj
-                                                                 ).exists()
-                )
+        return obj.subscriber.filter(
+            user=self.context.get('request').user.id
+        ).exists()
 
     class Meta:
         model = User
