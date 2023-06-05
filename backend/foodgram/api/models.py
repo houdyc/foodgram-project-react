@@ -112,7 +112,7 @@ class IngredientRecipe(models.Model):
         on_delete=models.CASCADE,
         verbose_name='Рецепт'
     )
-    ingredient = models.ForeignKey(
+    ingredient = models.ManyToManyField(
         Ingredient,
         on_delete=models.CASCADE,
         verbose_name='Ингредиент'
