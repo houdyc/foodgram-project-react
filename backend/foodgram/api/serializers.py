@@ -67,15 +67,15 @@ class RecipeIngredientsSerializer(serializers.ModelSerializer):
 class IngredientWriteSerializer(serializers.ModelSerializer):
 
     class Meta:
-        model = IngredientRecipe
-        fields = ('ingredient', 'amount')
+        model = Ingredient
+        fields = ('id', 'measurement_unit')
 
 
 class RecipeWriteSerializer(serializers.ModelSerializer):
     author = CustomUserSerializer(read_only=True)
     tags = PrimaryKeyRelatedField(queryset=Tag.objects.all(), many=True)
     image = Base64ImageField(max_length=None, use_url=True)
-    ingredient = IngredientWriteSerializer(many=True)
+    ingredients = IngredientWriteSerializer(many=True)
     cooking_time = IntegerField()
 
     class Meta:
@@ -119,19 +119,19 @@ class RecipeWriteSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         author = self.context['request'].user
         tags = validated_data.pop('tags')
-        ingredient = validated_data.pop('ingredient')
+        ingredients = validated_data.pop('ingredients')
         recipe = Recipe.objects.create(author=author, **validated_data)
-        self.create_ingredients(recipe, tags, ingredient)
+        self.create_ingredients(recipe, tags, ingredients)
         return recipe
 
     def update(self, instance, validated_data):
         tags = validated_data.pop('tags', None)
         if tags is not None:
             instance.tags.set(tags)
-        ingredient = validated_data.pop('ingredient', None)
-        if ingredient is not None:
-            instance.ingredient.clear()
-            self.create_ingredients(instance, tags, ingredient)
+        ingredients = validated_data.pop('ingredients', None)
+        if ingredients is not None:
+            instance.ingredients.clear()
+            self.create_ingredients(instance, tags, ingredients)
         return super().update(instance, validated_data)
 
     def to_representation(self, instance):
