@@ -65,18 +65,11 @@ class RecipeIngredientsSerializer(serializers.ModelSerializer):
 
 
 class IngredientWriteSerializer(serializers.ModelSerializer):
-    recipe = serializers.PrimaryKeyRelatedField(read_only=True)
-    id = serializers.PrimaryKeyRelatedField(
-        source='ingredient',
-        queryset=Ingredient.objects.all()
-    )
-    amount = serializers.IntegerField(write_only=True, min_value=1)
+    id = IntegerField()
 
     class Meta:
         model = IngredientRecipe
-        fields = (
-            'id', 'recipe', 'amount'
-        )
+        fields = ('id', 'amount')
 
 
 class RecipeWriteSerializer(serializers.ModelSerializer):
@@ -93,23 +86,14 @@ class RecipeWriteSerializer(serializers.ModelSerializer):
     def validate_ingredients(self, obj):
         if not obj:
             raise serializers.ValidationError(
-                {'ingredients': ['Обязательное поле.']})
-        if len(obj) < 1:
-            raise serializers.ValidationError(
-                {'ingredients': ['Не переданы ингредиенты.']})
-        unique_ingredient = []
-        for ingredient in obj:
-            id = ingredient.get('id')
-            if id in unique_ingredient:
+                'В рецепте не может быть 0 ингредиентов.'
+            )
+        ingredients = [item['id'] for item in obj]
+        for ingredient in ingredients:
+            if ingredients.count(ingredient) > 1:
                 raise serializers.ValidationError(
-                    {'ingredients': [
-                        'Нельзя дублировать названия ингредиентов.']})
-            unique_ingredient.append(id)
-            amount = int(ingredient.get('amount'))
-            if amount < 1:
-                raise serializers.ValidationError({'amount': [
-                    'Количество не может быть меньше 1.'
-                ]})
+                    'Ингредиенты не могут дублироваться.'
+                )
         return obj
 
     def validate_tags(self, obj):
