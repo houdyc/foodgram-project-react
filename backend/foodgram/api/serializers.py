@@ -160,6 +160,26 @@ class SubscribeSerializer(CustomUserSerializer):
             'email', 'id', 'username', 'first_name', 'last_name',
             'is_subscribed', 'recipes', 'recipes_count'
         )
+        validators = [
+            UniqueTogetherValidator(
+                queryset=Subscribe.objects.all(),
+                fields=('user', 'author',),
+                message='Вы уже подписаны на данного пользователя.'
+            )
+        ]
+
+    def validate(self, data):
+        if data.get('user') == data.get('author'):
+            raise serializers.ValidationError(
+                'Вы не можете оформлять подписки на себя.'
+            )
+        return data
+
+    def to_representation(self, instance):
+        request = self.context.get('request')
+        return SubscribeSerializer(
+            instance, context={'request': request}
+        ).data
 
     def get_recipes_count(self, obj):
         return Recipe.objects.filter(author=obj.author).count()

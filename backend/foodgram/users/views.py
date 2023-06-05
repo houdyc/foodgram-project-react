@@ -52,7 +52,7 @@ class SubscribeView(APIView):
 
 
 class SubscriptionsList(mixins.ListModelMixin, viewsets.GenericViewSet):
-    serializer_class = SubscribeSerializer
+    serializer_class = SubscribeUserSerializer
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
