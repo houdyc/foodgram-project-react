@@ -150,8 +150,7 @@ class RecipeShortSerializer(serializers.ModelSerializer):
         fields = ('id', 'name', 'image', 'cooking_time')
 
 
-class SubscribeSerializer(serializers.ModelSerializer):
-    is_subscribed = serializers.SerializerMethodField()
+class SubscribeSerializer(CustomUserSerializer):
     recipes = RecipeShortSerializer(many=True)
     recipes_count = serializers.SerializerMethodField()
 
@@ -161,10 +160,6 @@ class SubscribeSerializer(serializers.ModelSerializer):
             'email', 'id', 'username', 'first_name', 'last_name',
             'is_subscribed', 'recipes', 'recipes_count'
         )
-
-    def get_is_subscribed(self, obj):
-        return Subscribe.objects.filter(author=obj.author, user=obj.user
-                                        ).exists()
 
     def get_recipes_count(self, obj):
         return Recipe.objects.filter(author=obj.author).count()
