@@ -122,6 +122,7 @@ class IngredientRecipe(models.Model):
             1, 'Кол-во должно быть больше 0.'
         )]
     )
+    id = models.IntegerField()
 
     class Meta:
         constraints = [
