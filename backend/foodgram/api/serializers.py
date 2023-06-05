@@ -5,6 +5,7 @@ from rest_framework.fields import IntegerField
 from rest_framework.relations import PrimaryKeyRelatedField
 from rest_framework.validators import UniqueTogetherValidator
 
+from users.models import Subscribe
 from users.serializers import CustomUserSerializer
 from .models import (FavoriteRecipe, Ingredient, IngredientRecipe, Recipe,
                      ShoppingList, Tag)
@@ -64,11 +65,10 @@ class RecipeIngredientsSerializer(serializers.ModelSerializer):
 
 
 class IngredientWriteSerializer(serializers.ModelSerializer):
-    id = IntegerField()
 
     class Meta:
         model = IngredientRecipe
-        fields = ('id', 'amount')
+        fields = ('ingredient', 'amount')
 
 
 class RecipeWriteSerializer(serializers.ModelSerializer):
@@ -172,8 +172,15 @@ class SubscribeSerializer(CustomUserSerializer):
 class SubscribeUserSerializer(serializers.ModelSerializer):
 
     class Meta:
-        model = User
+        model = Subscribe
         fields = '__all__'
+        validators = [
+            UniqueTogetherValidator(
+                queryset=Subscribe.objects.all(),
+                fields=('user', 'author',),
+                message='Вы уже подписаны на данного пользователя.'
+            )
+        ]
 
     def validate(self, data):
         if data.get('user') == data.get('author'):
