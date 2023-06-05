@@ -64,9 +64,9 @@ class RecipeIngredientsSerializer(serializers.ModelSerializer):
         fields = ('id', 'name', 'measurement_unit', 'amount')
 
 
-class IngredientWriteSerializer(serializers.ModelSerializer):
-    id = serializers.CharField(source='ingredient.id')
-    name = serializers.CharField(source='ingredient.name')
+class IngredientAmountSerializer(serializers.ModelSerializer):
+    id = serializers.ReadOnlyField(source='ingredient.id')
+    name = serializers.ReadOnlyField(source='ingredient.name')
     measurement_unit = serializers.ReadOnlyField(
         source='ingredient.measurement_unit',
     )
@@ -74,6 +74,11 @@ class IngredientWriteSerializer(serializers.ModelSerializer):
     class Meta:
         model = IngredientRecipe
         fields = ('id', 'name', 'measurement_unit', 'amount')
+
+
+class IngredientWriteSerializer(IngredientAmountSerializer):
+    id = serializers.IntegerField(write_only=True)
+    amount = serializers.IntegerField(write_only=True)
 
 
 class RecipeWriteSerializer(serializers.ModelSerializer):
@@ -160,7 +165,7 @@ class SubscribeSerializer(CustomUserSerializer):
     username = serializers.ReadOnlyField(source='author.username')
     first_name = serializers.ReadOnlyField(source='author.first_name')
     last_name = serializers.ReadOnlyField(source='author.last_name')
-    recipes = RecipeShortSerializer(many=True)
+    recipes = RecipeShortSerializer(many=True, read_only=True)
     recipes_count = serializers.SerializerMethodField()
 
     class Meta:

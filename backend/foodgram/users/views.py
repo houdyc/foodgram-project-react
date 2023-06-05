@@ -7,7 +7,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from api.serializers import SubscribeSerializer, SubscribeUserSerializer
-from users.models import Subscribe
+from users.models import Subscribe, User
 from users.pagination import CustomPagination
 from users.serializers import CustomUserSerializer
 
@@ -36,19 +36,32 @@ class UsersViewSet(UserViewSet):
 class SubscribeView(APIView):
     permission_classes = [IsAuthenticated]
 
-    def post(self, request, user_id):
-        serializer = SubscribeUserSerializer(
-            data={'user': request.user.id, 'author': user_id}
-        )
-        serializer.is_valid(raise_exception=True)
-        serializer.save()
-        return Response(data=serializer.data, status=status.HTTP_201_CREATED)
+    @action(detail=True,
+            methods=['POST'],
+            permission_classes=[IsAuthenticated])
+    def subscribe(self, request, id):
+        user = request.user
+        author = get_object_or_404(User, id=id)
+        if Subscribe.objects.filter(author=author, user=user).exists():
+            return Response({'error': 'Вы уже подписаны'},
+                            status=status.HTTP_400_BAD_REQUEST)
+        if user == author:
+            return Response({'error': 'Невозможно подписаться на себя'},
+                            status=status.HTTP_400_BAD_REQUEST)
+        serializer = SubscribeSerializer(author, context={'request': request})
+        Subscribe.objects.create(user=user, author=author)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
 
-    def delete(self, request, user_id):
-        follow = get_object_or_404(Subscribe, author=user_id,
-                                   user=request.user)
-        follow.delete()
-        return Response(status=status.HTTP_204_NO_CONTENT)
+    @subscribe.mapping.delete
+    def delete_subscribe(self, request, id):
+        user = request.user
+        author = get_object_or_404(User, id=id)
+        if Subscribe.objects.filter(author=author, user=user).exists():
+            Subscribe.objects.filter(author=author, user=user).delete()
+            return Response('Подписка удалена',
+                            status=status.HTTP_204_NO_CONTENT)
+        return Response({'error': 'Вы не подписаны на этого пользователя'},
+                        status=status.HTTP_400_BAD_REQUEST)
 
 
 class SubscriptionsList(mixins.ListModelMixin, viewsets.GenericViewSet):
