@@ -160,6 +160,16 @@ class SubscribeSerializer(CustomUserSerializer):
             'email', 'id', 'username', 'first_name', 'last_name',
             'is_subscribed', 'recipes', 'recipes_count'
         )
+
+    def get_recipes_count(self, obj):
+        return Recipe.objects.filter(author=obj.author).count()
+
+
+class SubscribeUserSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = User
+        fields = '__all__'
         validators = [
             UniqueTogetherValidator(
                 queryset=Subscribe.objects.all(),
@@ -180,9 +190,6 @@ class SubscribeSerializer(CustomUserSerializer):
         return SubscribeSerializer(
             instance, context={'request': request}
         ).data
-
-    def get_recipes_count(self, obj):
-        return Recipe.objects.filter(author=obj.author).count()
 
 
 class FavoriteSerializer(serializers.ModelSerializer):
