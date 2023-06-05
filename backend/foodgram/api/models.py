@@ -18,6 +18,7 @@ class Ingredient(models.Model):
         verbose_name='Кол-во ингредиента.',
         help_text='Введите кол-во ингредиента.'
     )
+    id = models.IntegerField()
 
     class Meta:
         constraints = (
