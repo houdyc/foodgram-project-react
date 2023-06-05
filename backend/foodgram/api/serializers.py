@@ -5,7 +5,6 @@ from rest_framework.fields import IntegerField
 from rest_framework.relations import PrimaryKeyRelatedField
 from rest_framework.validators import UniqueTogetherValidator
 
-from users.models import Subscribe
 from users.serializers import CustomUserSerializer
 from .models import (FavoriteRecipe, Ingredient, IngredientRecipe, Recipe,
                      ShoppingList, Tag)
