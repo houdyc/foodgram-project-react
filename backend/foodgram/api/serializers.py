@@ -91,14 +91,23 @@ class RecipeWriteSerializer(serializers.ModelSerializer):
     def validate_ingredients(self, obj):
         if not obj:
             raise serializers.ValidationError(
-                'В рецепте не может быть 0 ингредиентов.'
-            )
-        ingredients = [item['id'] for item in obj]
-        for ingredient in ingredients:
-            if ingredients.count(ingredient) > 1:
+                {'ingredients': ['Обязательное поле.']})
+        if len(obj) < 1:
+            raise serializers.ValidationError(
+                {'ingredients': ['Не переданы ингредиенты.']})
+        unique_ingredient = []
+        for ingredient in obj:
+            id = ingredient.get('id')
+            if id in unique_ingredient:
                 raise serializers.ValidationError(
-                    'Ингредиенты не могут дублироваться.'
-                )
+                    {'ingredients': [
+                        'Нельзя дублировать названия ингредиентов.']})
+            unique_ingredient.append(id)
+            amount = int(ingredient.get('amount'))
+            if amount < 1:
+                raise serializers.ValidationError({'amount': [
+                    'Количество не может быть меньше 1.'
+                ]})
         return obj
 
     def validate_tags(self, obj):
