@@ -18,7 +18,6 @@ from .utils import make_txt_response
 
 
 class RecipeViewSet(viewsets.ModelViewSet):
-    queryset = Recipe.objects.all()
     pagination_class = CustomPagination
     permission_classes = [IsAuthorOrReadOnly]
     filter_backends = [DjangoFilterBackend]
