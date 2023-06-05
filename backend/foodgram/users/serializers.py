@@ -10,8 +10,8 @@ class CustomUserSerializer(UserSerializer):
 
     def get_is_subscribed(self, obj):
         user = self.context["request"].user
-        return (user.is_authenticated and user.subscribers.filter(author=obj
-                                                                  ).exists()
+        return (user.is_authenticated and user.subscriber.filter(author=obj
+                                                                 ).exists()
                 )
 
     class Meta:
