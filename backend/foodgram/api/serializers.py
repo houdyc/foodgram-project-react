@@ -65,10 +65,11 @@ class RecipeIngredientsSerializer(serializers.ModelSerializer):
 
 
 class IngredientWriteSerializer(serializers.ModelSerializer):
+    amount = IntegerField()
 
     class Meta:
         model = Ingredient
-        fields = ('id', 'measurement_unit')
+        fields = ('id', 'amount')
 
 
 class RecipeWriteSerializer(serializers.ModelSerializer):
@@ -112,7 +113,7 @@ class RecipeWriteSerializer(serializers.ModelSerializer):
             [IngredientRecipe(
                 recipe=recipe,
                 ingredient_id=ingredient.get('id'),
-                measurement_unit=ingredient['measurement_unit']
+                amount=ingredient['amount']
             ) for ingredient in ingredients]
         )
 
