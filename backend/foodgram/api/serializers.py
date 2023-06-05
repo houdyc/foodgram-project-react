@@ -65,9 +65,10 @@ class RecipeIngredientsSerializer(serializers.ModelSerializer):
 
 
 class IngredientWriteSerializer(serializers.ModelSerializer):
+    amount = IntegerField()
 
     class Meta:
-        model = IngredientRecipe
+        model = Ingredient
         fields = ('id', 'amount')
 
 
@@ -81,6 +82,19 @@ class RecipeWriteSerializer(serializers.ModelSerializer):
     class Meta:
         model = Recipe
         fields = '__all__'
+
+    def validate_ingredients(self, obj):
+        if not obj:
+            raise serializers.ValidationError(
+                'В рецепте не может быть 0 ингредиентов.'
+            )
+        ingredients = [item['id'] for item in obj]
+        for ingredient in ingredients:
+            if ingredients.count(ingredient) > 1:
+                raise serializers.ValidationError(
+                    'Ингредиенты не могут дублироваться.'
+                )
+        return obj
 
     def validate_tags(self, obj):
         tags = obj
