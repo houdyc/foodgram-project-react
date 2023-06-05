@@ -64,7 +64,7 @@ class RecipeIngredientsSerializer(serializers.ModelSerializer):
         fields = ('id', 'name', 'measurement_unit', 'amount')
 
 
-class IngredientWriteSerializer(Ingredient):
+class IngredientWriteSerializer(IngredientSerializer):
 
     class Meta:
         model = IngredientRecipe
