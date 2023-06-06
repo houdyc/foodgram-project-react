@@ -11,7 +11,11 @@ from users.pagination import CustomPagination
 from users.serializers import CustomUserSerializer
 
 
-class UsersViewSet(UserViewSet):
+class UsersViewSet(UserViewSet, mixins.CreateModelMixin,
+                   mixins.ListModelMixin,
+                   mixins.RetrieveModelMixin,
+                   viewsets.GenericViewSet):
+    queryset = User.objects.all()
     permission_classes = [IsAuthenticated]
     serializer_class = CustomUserSerializer
     pagination_class = [CustomPagination]
@@ -30,14 +34,6 @@ class UsersViewSet(UserViewSet):
             partial=True)
         serializer.is_valid(raise_exception=True)
         return Response(serializer.data)
-
-
-class SubscribeViewSet(mixins.CreateModelMixin,
-                       mixins.ListModelMixin,
-                       mixins.RetrieveModelMixin,
-                       viewsets.GenericViewSet):
-    queryset = User.objects.all()
-    permission_classes = [IsAuthenticated]
 
     @action(detail=False, methods=['get'],
             permission_classes=(IsAuthenticated,),
