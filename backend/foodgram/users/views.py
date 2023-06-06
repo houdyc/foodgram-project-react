@@ -6,6 +6,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from api.models import Recipe
 from api.serializers import SubscribeSerializer, SubscribeUserSerializer
 from users.models import Subscribe
 from users.pagination import CustomPagination
@@ -56,4 +57,4 @@ class SubscriptionsList(mixins.ListModelMixin, viewsets.GenericViewSet):
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
-        return Subscribe.objects.filter(user=self.request.user)
+        return Recipe.objects.filter(author=self.request.author)
