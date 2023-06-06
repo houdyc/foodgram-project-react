@@ -29,6 +29,9 @@ class RecipeViewSet(viewsets.ModelViewSet):
             return RecipeSerializer
         return RecipeWriteSerializer
 
+    def get_queryset(self):
+        return Recipe.objects.filter(author=self.request.user).data
+
     def create_or_delete(self, request, pk, model, serializer, message):
         user = request.user
         recipe = get_object_or_404(Recipe, pk=pk)
