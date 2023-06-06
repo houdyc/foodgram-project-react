@@ -188,7 +188,7 @@ class SubscribeSerializer(CustomUserSerializer):
     def create(self, validated_data):
         subscription = Subscribe.objects.create(**validated_data)
         subscription.save()
-        return User.objects.get(subscription_follower__id=subscription.id)
+        return User.objects.get(subscriber__id=subscription.id)
 
 
 class FavoriteSerializer(serializers.ModelSerializer):
