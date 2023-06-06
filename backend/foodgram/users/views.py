@@ -32,7 +32,7 @@ class UsersViewSet(UserViewSet):
         return Response(serializer.data)
 
 
-class SubscribeViewSet(mixins.CreateModelMixin,
+class SubscribeView(mixins.CreateModelMixin,
                        mixins.ListModelMixin,
                        mixins.RetrieveModelMixin,
                        viewsets.GenericViewSet):
