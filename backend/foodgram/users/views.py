@@ -11,11 +11,7 @@ from users.pagination import CustomPagination
 from users.serializers import CustomUserSerializer
 
 
-class UsersViewSet(UserViewSet, mixins.CreateModelMixin,
-                   mixins.ListModelMixin,
-                   mixins.RetrieveModelMixin,
-                   viewsets.GenericViewSet):
-    queryset = User.objects.all()
+class UsersViewSet(UserViewSet):
     permission_classes = [IsAuthenticated]
     serializer_class = CustomUserSerializer
     pagination_class = [CustomPagination]
@@ -35,15 +31,13 @@ class UsersViewSet(UserViewSet, mixins.CreateModelMixin,
         serializer.is_valid(raise_exception=True)
         return Response(serializer.data)
 
-    @action(detail=False, methods=['get'],
-            permission_classes=(IsAuthenticated,),
-            pagination_class=CustomPagination)
-    def subscriptions(self, request):
-        queryset = User.objects.filter(subscribing__user=request.user)
-        page = self.paginate_queryset(queryset)
-        serializer = SubscribeSerializer(page, many=True,
-                                         context={'request': request})
-        return self.get_paginated_response(serializer.data)
+
+class SubscribeViewSet(mixins.CreateModelMixin,
+                       mixins.ListModelMixin,
+                       mixins.RetrieveModelMixin,
+                       viewsets.GenericViewSet):
+    queryset = User.objects.all()
+    permission_classes = [IsAuthenticated]
 
     @action(detail=True, methods=['post', 'delete'],
             permission_classes=(IsAuthenticated,))
@@ -66,3 +60,18 @@ class UsersViewSet(UserViewSet, mixins.CreateModelMixin,
                             status=status.HTTP_204_NO_CONTENT)
         return Response({'detail': 'Проверьте метод'},
                         status=status.HTTP_400_BAD_REQUEST)
+
+
+class SubscriptionsList(mixins.ListModelMixin, viewsets.GenericViewSet):
+    serializer_class = SubscribeSerializer
+    permission_classes = [IsAuthenticated]
+
+    @action(detail=False, methods=['get'],
+            permission_classes=(IsAuthenticated,),
+            pagination_class=CustomPagination)
+    def subscriptions(self, request):
+        queryset = User.objects.filter(subscribing__user=request.user)
+        page = self.paginate_queryset(queryset)
+        serializer = SubscribeSerializer(page, many=True,
+                                         context={'request': request})
+        return self.get_paginated_response(serializer.data)
