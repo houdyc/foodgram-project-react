@@ -48,10 +48,10 @@ class SubscribeViewSet(
         if self.action == 'destroy':
             return Subscribe.objects.all()
         return super().get_queryset().filter(
-            subscription_author__follower=self.request.user.id
+            subscribing__subscriber=self.request.user.id
         ).prefetch_related(
-            'subscription_author',
-            'subscription_follower'
+            'subscriber',
+            'subscribing'
         )
 
     def create(self, request, *args, **kwargs):

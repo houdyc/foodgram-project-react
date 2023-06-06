@@ -8,13 +8,13 @@ class Subscribe(models.Model):
     user = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
-        related_name='subscription_follower',
+        related_name='subscriber',
         verbose_name='Пользователь'
     )
     author = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
-        related_name='subscription_author',
+        related_name='subscribing',
         verbose_name='Автор'
     )
 
