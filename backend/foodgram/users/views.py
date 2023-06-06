@@ -1,10 +1,12 @@
+from django.shortcuts import get_object_or_404
 from djoser.views import UserViewSet
-from rest_framework import mixins, viewsets
+from rest_framework import mixins, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
+from rest_framework.views import APIView
 
-from api.serializers import SubscribeSerializer
+from api.serializers import SubscribeSerializer, SubscribeUserSerializer
 from users.models import Subscribe, User
 from users.pagination import CustomPagination
 from users.serializers import CustomUserSerializer
@@ -31,31 +33,27 @@ class UsersViewSet(UserViewSet):
         return Response(serializer.data)
 
 
-class SubscribeViewSet(
-    mixins.CreateModelMixin,
-    mixins.DestroyModelMixin,
-    mixins.ListModelMixin,
-    viewsets.GenericViewSet
-):
+class SubscribeView(APIView):
+    permission_classes = [IsAuthenticated]
 
-    queryset = User.objects.all()
+    def post(self, request, user_id):
+        serializer = SubscribeUserSerializer(
+            data={'user': request.user.id, 'author': user_id}
+        )
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(data=serializer.data, status=status.HTTP_201_CREATED)
+
+    def delete(self, request, user_id):
+        follow = get_object_or_404(Subscribe, author=user_id,
+                                   user=request.user)
+        follow.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+class SubscriptionsList(mixins.ListModelMixin, viewsets.GenericViewSet):
     serializer_class = SubscribeSerializer
-    lookup_field = 'author'
-    pagination_class = CustomPagination
-    pagination_class.page_size_query_param = 'limit'
+    permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
-        if self.action == 'destroy':
-            return Subscribe.objects.all()
-        return super().get_queryset().filter(
-            subscribing=self.request.user.id,
-            subscriber=self.request.user.id,
-        ).prefetch_related(
-            'subscriber',
-            'subscribing'
-        )
-
-    def create(self, request, *args, **kwargs):
-        self.request.data['user'] = self.request.user.id
-        self.request.data['author'] = self.kwargs.get('author')
-        return super().create(request)
+        return Subscribe.objects.filter(user=self.request.user)

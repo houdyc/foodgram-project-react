@@ -159,36 +159,59 @@ class RecipeShortSerializer(serializers.ModelSerializer):
         fields = ('id', 'name', 'image', 'cooking_time')
 
 
-class SubscribeSerializer(CustomUserSerializer):
-    author = serializers.PrimaryKeyRelatedField(
-        queryset=User.objects.all(), write_only=True
-    )
-    subscriber = serializers.PrimaryKeyRelatedField(
-        queryset=User.objects.all(), write_only=True
-    )
-    recipes = RecipeShortSerializer(many=True, read_only=True)
+class SubscribeSerializer(serializers.ModelSerializer):
+    email = serializers.ReadOnlyField(source='author.email')
+    id = serializers.ReadOnlyField(source='author.id')
+    username = serializers.ReadOnlyField(source='author.username')
+    first_name = serializers.ReadOnlyField(source='author.first_name')
+    last_name = serializers.ReadOnlyField(source='author.last_name')
+    is_subscribed = serializers.SerializerMethodField()
+    recipes = serializers.SerializerMethodField()
     recipes_count = serializers.SerializerMethodField()
 
     class Meta:
-        model = User
+        model = Subscribe
         fields = (
             'email', 'id', 'username', 'first_name', 'last_name',
-            'is_subscribed', 'recipes', 'recipes_count', 'author', 'subscriber'
+            'is_subscribed', 'recipes', 'recipes_count'
         )
 
+    def get_is_subscribed(self, obj):
+        return Subscribe.objects.filter(author=obj.author, user=obj.user
+                                        ).exists()
+
+    def get_recipes(self, obj):
+        queryset = Recipe.objects.filter(author=obj.author)
+        return RecipeShortSerializer(queryset, many=True).data
+
     def get_recipes_count(self, obj):
-        return obj.recipes.count()
+        return Recipe.objects.filter(author=obj.author).count()
 
-    def validate_author(self, author):
-        if author == self.context['request'].user:
+
+class SubscribeUserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Subscribe
+        fields = '__all__'
+        validators = [
+            UniqueTogetherValidator(
+                queryset=Subscribe.objects.all(),
+                fields=('user', 'author',),
+                message='Вы уже подписаны на данного пользователя.'
+            )
+        ]
+
+    def validate(self, data):
+        if data.get('user') == data.get('author'):
             raise serializers.ValidationError(
-                'Subscription for yourself is not allowed')
-        return author
+                'Вы не можете оформлять подписки на себя.'
+            )
+        return data
 
-    def create(self, validated_data):
-        subscription = Subscribe.objects.create(**validated_data)
-        subscription.save()
-        return User.objects.get(subscriber__id=subscription.id)
+    def to_representation(self, instance):
+        request = self.context.get('request')
+        return SubscribeSerializer(
+            instance, context={'request': request}
+        ).data
 
 
 class FavoriteSerializer(serializers.ModelSerializer):
