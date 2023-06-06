@@ -185,9 +185,20 @@ class SubscribeSerializer(serializers.ModelSerializer):
 
 
 class SubscribeUserSerializer(serializers.ModelSerializer):
+    recipes = serializers.SerializerMethodField(read_only=True)
+
     class Meta:
-        model = Subscribe
-        fields = '__all__'
+        model = User
+        fields = (
+            'email',
+            'id',
+            'username',
+            'first_name',
+            'last_name',
+            'is_subscribed',
+            'recipes',
+            'recipes_count',
+        )
         validators = [
             UniqueTogetherValidator(
                 queryset=Subscribe.objects.all(),
@@ -202,6 +213,10 @@ class SubscribeUserSerializer(serializers.ModelSerializer):
                 'Вы не можете оформлять подписки на себя.'
             )
         return data
+
+    def get_recipes(self, obj):
+        queryset = Recipe.objects.filter(author=obj.author)
+        return RecipeShortSerializer(queryset, many=True).data
 
     def to_representation(self, instance):
         request = self.context.get('request')
