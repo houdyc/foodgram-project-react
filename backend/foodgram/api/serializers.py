@@ -166,7 +166,7 @@ class SubscribeSerializer(serializers.ModelSerializer):
     first_name = serializers.ReadOnlyField(source='author.first_name')
     last_name = serializers.ReadOnlyField(source='author.last_name')
     is_subscribed = serializers.SerializerMethodField()
-    recipes = RecipeShortSerializer(many=True)
+    recipes = RecipeShortSerializer(many=True, read_only=True)
     recipes_count = serializers.SerializerMethodField()
 
     class Meta:
@@ -185,44 +185,34 @@ class SubscribeSerializer(serializers.ModelSerializer):
 
 
 class SubscribeUserSerializer(serializers.ModelSerializer):
-    recipes = serializers.SerializerMethodField(read_only=True)
+    is_subscribed = serializers.SerializerMethodField()
+    recipes = serializers.SerializerMethodField()
+    recipes_amount = serializers.SerializerMethodField()
 
     class Meta:
         model = User
-        fields = (
-            'email',
-            'id',
-            'username',
-            'first_name',
-            'last_name',
-            'is_subscribed',
-            'recipes',
-            'recipes_count',
-        )
-        validators = [
-            UniqueTogetherValidator(
-                queryset=Subscribe.objects.all(),
-                fields=('user', 'author',),
-                message='Вы уже подписаны на данного пользователя.'
-            )
-        ]
+        fields = ('email', 'id',
+                  'username', 'first_name',
+                  'last_name', 'is_subscribed',
+                  'recipes', 'recipes_amount')
 
-    def validate(self, data):
-        if data.get('user') == data.get('author'):
-            raise serializers.ValidationError(
-                'Вы не можете оформлять подписки на себя.'
-            )
-        return data
+    def get_is_subscribed(self, obj):
+        request = self.context.get('request')
+        return (
+                request.user.is_authenticated
+                and Subscribe.objects.filter(user=request.user,
+                                             author=obj).exists())
 
     def get_recipes(self, obj):
-        queryset = Recipe.objects.filter(author=obj.author)
-        return RecipeShortSerializer(queryset, many=True).data
-
-    def to_representation(self, instance):
         request = self.context.get('request')
-        return SubscribeSerializer(
-            instance, context={'request': request}
-        ).data
+        recipes = obj.recipe.all()
+        recipes_limit = request.query_params.get('recipes_limit')
+        if recipes_limit:
+            recipes = recipes[:int(recipes_limit)]
+        return RecipeSerializer(recipes, many=True).data
+
+    def get_recipes_amount(self, obj):
+        return obj.recipe.count()
 
 
 class FavoriteSerializer(serializers.ModelSerializer):
