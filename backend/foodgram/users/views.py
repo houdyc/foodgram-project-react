@@ -48,7 +48,8 @@ class SubscribeViewSet(
         if self.action == 'destroy':
             return Subscribe.objects.all()
         return super().get_queryset().filter(
-            subscribing__subscriber=self.request.user.id
+            subscribing=self.request.user.id,
+            subscriber=self.request.user.id,
         ).prefetch_related(
             'subscriber',
             'subscribing'
