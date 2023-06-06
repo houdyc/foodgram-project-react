@@ -57,4 +57,4 @@ class SubscriptionsList(mixins.ListModelMixin, viewsets.GenericViewSet):
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
-        return Recipe.objects.filter(author=self.request.author)
+        return Recipe.objects.filter(author=self.request.user)
