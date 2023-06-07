@@ -12,6 +12,7 @@ from users.serializers import CustomUserSerializer
 
 
 class UsersViewSet(UserViewSet):
+    queryset = User.objects.all()
     permission_classes = [IsAuthenticated]
     serializer_class = CustomUserSerializer
     pagination_class = [CustomPagination]
@@ -63,8 +64,8 @@ class UsersViewSet(UserViewSet):
             permission_classes=[IsAuthenticated])
     def subscriptions(self, request):
         user = request.user
-        follows = User.objects.filter(subscribing__user=user)
-        page = self.paginate_queryset(follows)
+        subscribers = User.objects.filter(subscribing__user=user)
+        page = self.paginate_queryset(subscribers)
         serializer = SubscribeSerializer(
             page, many=True,
             context={'request': request})
