@@ -2,6 +2,7 @@ from django.shortcuts import get_object_or_404
 from djoser.views import UserViewSet
 from rest_framework import mixins, status, viewsets
 from rest_framework.decorators import action
+from rest_framework.pagination import LimitOffsetPagination
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -55,6 +56,16 @@ class SubscriptionsList(mixins.ListModelMixin, viewsets.GenericViewSet):
     serializer_class = SubscribeSerializer
     permission_classes = [IsAuthenticated]
 
-    @action(detail=False, pagination_class=CustomPagination)
-    def get_queryset(self):
-        return Subscribe.objects.filter(user=self.request.user)
+    @action(methods=['get'],
+            detail=False,
+            pagination_class=LimitOffsetPagination)
+    def subscriptions(self, request):
+        subscribe = Subscribe.objects.filter(user=request.user)
+        page = self.paginate_queryset(subscribe)
+        if page is not None:
+            serializer = SubscribeSerializer(page, many=True,
+                                             context={'request': request})
+            return self.get_paginated_response(serializer.data)
+        serializer = SubscribeSerializer(subscribe, many=True,
+                                         context={'request': request})
+        return Response(serializer.data, status=status.HTTP_200_OK)
