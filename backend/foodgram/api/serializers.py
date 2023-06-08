@@ -75,6 +75,14 @@ class IngredientAmountSerializer(serializers.ModelSerializer):
         model = IngredientRecipe
         fields = ('id', 'name', 'measurement_unit', 'amount')
 
+    def validate_amount(self, data):
+        if int(data) < 1:
+            raise serializers.ValidationError({
+                'ingredients': 'Количество должно быть больше 1',
+                'msg': data
+            })
+        return data
+
 
 class IngredientWriteSerializer(IngredientAmountSerializer):
     id = serializers.IntegerField(write_only=True)
