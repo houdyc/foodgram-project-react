@@ -56,7 +56,7 @@ class SubscriptionsList(viewsets.GenericViewSet):
     pagination_class = [CustomPagination]
 
     def list(self, request):
-        ids = request.user.follows.all().values_list(
+        ids = request.user.subscriber.all().values_list(
             'author',
             flat=True
         )
