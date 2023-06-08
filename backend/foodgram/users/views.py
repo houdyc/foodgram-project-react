@@ -57,17 +57,4 @@ class SubscriptionsList(UserViewSet):
     pagination_class = CustomPagination
 
     def get_queryset(self):
-        return Subscribe.objects.filter(user=self.request.user)
-
-    @action(
-        detail=False,
-        permission_classes=[IsAuthenticated]
-    )
-    def subscriptions(self, request):
-        user = request.user
-        queryset = User.objects.filter(subscribing__user=user)
-        pages = self.paginate_queryset(queryset)
-        serializer = SubscribeSerializer(pages,
-                                         many=True,
-                                         context={'request': request})
-        return self.get_paginated_response(serializer.data)
+        return Subscribe.objects.filter(user=self.request.user)[:3]
