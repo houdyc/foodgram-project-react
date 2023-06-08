@@ -1,13 +1,13 @@
 from django.shortcuts import get_object_or_404
 from djoser.views import UserViewSet
-from rest_framework import mixins, status, viewsets
+from rest_framework import status, viewsets
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from api.serializers import SubscribeSerializer, SubscribeUserSerializer
-from users.models import Subscribe
+from users.models import Subscribe, User
 from users.pagination import CustomPagination
 from users.serializers import CustomUserSerializer
 
@@ -51,9 +51,16 @@ class SubscribeView(APIView):
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 
-class SubscriptionsList(mixins.ListModelMixin, viewsets.GenericViewSet):
+class SubscriptionsList(viewsets.GenericViewSet):
     serializer_class = SubscribeSerializer
     permission_classes = [IsAuthenticated]
 
-    def get_queryset(self):
-        return Subscribe.objects.filter(user=self.request.user)
+    def list(self, request):
+        queryset = User.objects.filter(subscribing__subscriber=request.user)
+        pages = self.paginate_queryset(queryset)
+        serializer = SubscribeSerializer(
+            pages,
+            many=True,
+            context={'request': request}
+        )
+        return self.get_paginated_response(serializer.data)
