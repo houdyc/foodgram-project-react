@@ -54,6 +54,6 @@ class SubscribeView(APIView):
 class SubscriptionsList(mixins.ListModelMixin, viewsets.GenericViewSet):
     serializer_class = SubscribeSerializer
     permission_classes = [IsAuthenticated]
-    
+
     def get_queryset(self):
         return Subscribe.objects.filter(user=self.request.user)
