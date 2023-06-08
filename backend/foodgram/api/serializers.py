@@ -111,6 +111,11 @@ class RecipeWriteSerializer(serializers.ModelSerializer):
                 raise serializers.ValidationError(
                     'Ингредиенты не могут дублироваться.'
                 )
+        if obj['cooking_time'] <= 0:
+            raise serializers.ValidationError(
+                'Время приготовления должно быть больше 0!'
+            )
+        return obj
         return obj
 
     def validate_tags(self, obj):
