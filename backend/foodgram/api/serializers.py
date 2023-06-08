@@ -194,6 +194,20 @@ class SubscribeSerializer(serializers.ModelSerializer):
         return Subscribe.objects.filter(author=obj.author, user=obj.user
                                         ).exists()
 
+    def get_recipes(self, obj):
+        request = self.context.get('request')
+        recipes_limit = None
+        if request:
+            recipes_limit = request.query_params.get('recipes_limit')
+        recipes = obj.recipes.all()
+        if recipes_limit:
+            try:
+                recipes = obj.recipes.all()[:int(recipes_limit)]
+            except Exception as error:
+                print('recipes_limit must include only numbers: ' + str(error))
+        return RecipeShortSerializer(recipes, many=True,
+                                     context={'request': request}).data
+
     def get_recipes_count(self, obj):
         return Recipe.objects.filter(author=obj.author).count()
 
