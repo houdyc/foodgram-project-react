@@ -7,7 +7,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from api.serializers import SubscribeSerializer, SubscribeUserSerializer
-from users.models import Subscribe
+from users.models import Subscribe, User
 from users.pagination import CustomPagination
 from users.serializers import CustomUserSerializer
 
@@ -56,5 +56,10 @@ class SubscriptionsList(mixins.ListModelMixin, viewsets.GenericViewSet):
     permission_classes = [IsAuthenticated]
 
     @action(detail=False, pagination_class=CustomPagination)
-    def get_queryset(self):
-        return Subscribe.objects.filter(user=self.request.user)
+    def get_queryset(self, request, pk=None):
+        queryset = User.objects.filter(following__user=request.user)
+        page = self.paginate_queryset(queryset)
+        serializer = SubscribeSerializer(
+            page, many=True, context={'request': request}
+        )
+        return self.get_paginated_response(serializer.data)
