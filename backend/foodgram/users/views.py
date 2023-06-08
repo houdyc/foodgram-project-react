@@ -63,5 +63,5 @@ class SubscriptionsList(viewsets.GenericViewSet):
         queryset = User.objects.filter(pk__in=ids)
         page = self.paginate_queryset(queryset)
         serializer = SubscribeSerializer(
-            page, context={'request': request}, many=True)
+            page, context=['request'], many=True)
         return self.get_paginated_response(serializer.data)
