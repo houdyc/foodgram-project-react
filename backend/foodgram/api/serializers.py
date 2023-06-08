@@ -103,6 +103,9 @@ class RecipeWriteSerializer(serializers.ModelSerializer):
                 raise serializers.ValidationError(
                     'Ингредиенты не могут дублироваться.'
                 )
+            if ingredient < 0:
+                raise serializers.ValidationError(
+                    'Не может быть отрицательного кол-ва ингредиентов')
         return obj
 
     def validate_tags(self, obj):
@@ -152,7 +155,6 @@ class RecipeWriteSerializer(serializers.ModelSerializer):
 
 
 class RecipeShortSerializer(serializers.ModelSerializer):
-
     class Meta:
         model = Recipe
         fields = ('id', 'name', 'image', 'cooking_time')
@@ -210,7 +212,6 @@ class SubscribeUserSerializer(serializers.ModelSerializer):
 
 
 class FavoriteSerializer(serializers.ModelSerializer):
-
     class Meta:
         model = FavoriteRecipe
         fields = '__all__'
@@ -231,7 +232,6 @@ class FavoriteSerializer(serializers.ModelSerializer):
 
 
 class ShoppingCartSerializer(serializers.ModelSerializer):
-
     class Meta:
         model = ShoppingList
         fields = '__all__'
