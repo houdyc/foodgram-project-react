@@ -58,10 +58,10 @@ class SubscribeView(UserViewSet):
 
     @action(detail=False)
     def subscriptions(self, request):
-        followers = User.objects.filter(
-            id__in=request.user.follower.all().values('author_id')
+        subscribers = User.objects.filter(
+            id__in=request.user.subscriber.all().values('author_id')
         )
-        pages = self.paginate_queryset(followers)
+        pages = self.paginate_queryset(subscribers)
         serializer = SubscribeSerializer(
             pages, many=True, context={'request': request}
         )
