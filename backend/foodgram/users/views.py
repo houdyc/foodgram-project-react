@@ -52,7 +52,7 @@ class SubscribeView(APIView):
 
 
 class SubscriptionsList(UserViewSet):
-    queryset = User.objects.all()
+    queryset = Subscribe.objects.all()
     serializer_class = SubscribeSerializer
     permission_classes = [IsAuthenticated]
     pagination_class = CustomPagination
