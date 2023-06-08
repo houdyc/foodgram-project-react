@@ -57,4 +57,4 @@ class SubscriptionsList(UserViewSet):
     pagination_class = CustomPagination
 
     def get_queryset(self):
-        return Subscribe.objects.filter(user=self.request.user)[:3]
+        return Subscribe.objects.filter(user=self.request.user)
