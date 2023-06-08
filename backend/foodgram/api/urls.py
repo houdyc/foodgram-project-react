@@ -10,8 +10,10 @@ router = DefaultRouter()
 router.register('ingredients', IngredientViewSet)
 router.register('recipes', RecipeViewSet)
 router.register('tags', TagViewSet)
-router.register('users/subscriptions', SubscriptionsList)
-router.register(r'users/(?P<user_id>\d+)/subscribe', SubscribeView)
+router.register('users/subscriptions', SubscriptionsList,
+                basename='subscriptions')
+router.register(r'users/(?P<user_id>\d+)/subscribe', SubscribeView,
+                basename='subscribe')
 
 urlpatterns = [
     path('', include(router.urls))
