@@ -91,11 +91,17 @@ class Recipe(models.Model):
         Tag,
         verbose_name='Тег',
     )
-    cooking_time = models.PositiveSmallIntegerField(
-        validators=[MinValueValidator(
-            1, message='Время должно быть больше 0.'
-        )],
-        verbose_name='Время приготовления.'
+    cooking_time = models.IntegerField(
+        'Время в мин.',
+        validators=[
+            MinValueValidator(
+                1,
+                message=(
+                    f'Минимальное время приготовления в минутах: '
+                    f'1'
+                )
+            )
+        ]
     )
 
     class Meta:
@@ -118,10 +124,17 @@ class IngredientRecipe(models.Model):
         on_delete=models.CASCADE,
         verbose_name='Ингредиент'
     )
-    amount = models.PositiveSmallIntegerField(
-        validators=[MinValueValidator(
-            1, 'Кол-во должно быть больше 0.'
-        )]
+    amount = models.IntegerField(
+        'Количество ингредиента',
+        validators=[
+            MinValueValidator(
+                1,
+                message=(
+                    f'Минимальное количество ингредиента: '
+                    f'1 ед.'
+                )
+            )
+        ]
     )
 
     class Meta:
