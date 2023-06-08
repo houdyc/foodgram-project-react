@@ -112,7 +112,7 @@ class RecipeWriteSerializer(serializers.ModelSerializer):
                     'Ингредиенты не могут дублироваться.'
                 )
         return obj
-    
+
     def validate_cooking_time(self, obj):
         if obj['cooking_time'] <= 0:
             raise serializers.ValidationError(
