@@ -55,7 +55,8 @@ class SubscriptionsList(viewsets.GenericViewSet):
     permission_classes = [IsAuthenticated]
 
     def list(self, request):
-        queryset = User.objects.filter(subscribing__subscriber=request.user)
+        queryset = Subscribe.objects.filter(
+            subscribing__subscriber=request.user)
         pages = self.paginate_queryset(queryset)
         serializer = SubscribeSerializer(
             pages,
