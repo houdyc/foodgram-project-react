@@ -33,6 +33,20 @@ class UsersViewSet(UserViewSet):
         serializer.is_valid(raise_exception=True)
         return Response(serializer.data)
 
+    @action(methods=['get'],
+            detail=False,
+            pagination_class=LimitOffsetPagination)
+    def subscriptions(self, request):
+        subscribe = Subscribe.objects.filter(user=request.user)
+        page = self.paginate_queryset(subscribe)
+        if page is not None:
+            serializer = SubscribeSerializer(page, many=True,
+                                             context={'request': request})
+            return self.get_paginated_response(serializer.data)
+        serializer = SubscribeSerializer(subscribe, many=True,
+                                         context={'request': request})
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
 
 class SubscribeView(APIView):
     permission_classes = [IsAuthenticated]
@@ -50,22 +64,3 @@ class SubscribeView(APIView):
                                    user=request.user)
         follow.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
-
-
-class SubscriptionsList(mixins.ListModelMixin, viewsets.GenericViewSet):
-    serializer_class = SubscribeSerializer
-    permission_classes = [IsAuthenticated]
-
-    @action(methods=['get'],
-            detail=False,
-            pagination_class=LimitOffsetPagination)
-    def subscriptions(self, request):
-        subscribe = Subscribe.objects.filter(user=request.user)
-        page = self.paginate_queryset(subscribe)
-        if page is not None:
-            serializer = SubscribeSerializer(page, many=True,
-                                             context={'request': request})
-            return self.get_paginated_response(serializer.data)
-        serializer = SubscribeSerializer(subscribe, many=True,
-                                         context={'request': request})
-        return Response(serializer.data, status=status.HTTP_200_OK)
