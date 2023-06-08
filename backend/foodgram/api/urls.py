@@ -12,7 +12,7 @@ router.register('recipes', RecipeViewSet)
 router.register('tags', TagViewSet)
 
 urlpatterns = [
-    path(r'users/subscriptions/', SubscriptionsList.as_view(),
+    path(r'users/subscriptions/', SubscriptionsList.as_view({'get': 'list'}),
          name='subscriptions'),
     path(r'users/<int:user_id>/subscribe/', SubscribeView.as_view(),
          name='subscribe'),

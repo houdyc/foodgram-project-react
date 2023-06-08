@@ -56,7 +56,7 @@ class SubscriptionsList(viewsets.GenericViewSet):
     pagination_class = [CustomPagination]
 
     def subscriptions(self, request):
-        queryset = User.objects.filter(following__user=request.user)
+        queryset = User.objects.filter(subscribing__user=request.user)
         page = self.paginate_queryset(queryset)
         serializer = SubscribeSerializer(page, many=True,
                                          context={'request': request})
