@@ -55,13 +55,9 @@ class SubscriptionsList(viewsets.GenericViewSet):
     permission_classes = [IsAuthenticated]
     pagination_class = [CustomPagination]
 
-    def list(self, request):
-        ids = request.user.subscriber.all().values_list(
-            'author',
-            flat=True
-        )
-        queryset = User.objects.filter(pk__in=ids)
+    def subscriptions(self, request):
+        queryset = User.objects.filter(following__user=request.user)
         page = self.paginate_queryset(queryset)
-        serializer = SubscribeSerializer(
-            page, context=['request'], many=True)
+        serializer = SubscribeSerializer(page, many=True,
+                                         context={'request': request})
         return self.get_paginated_response(serializer.data)
