@@ -116,7 +116,6 @@ class RecipeWriteSerializer(serializers.ModelSerializer):
                 'Время приготовления должно быть больше 0!'
             )
         return obj
-        return obj
 
     def validate_tags(self, obj):
         tags = obj

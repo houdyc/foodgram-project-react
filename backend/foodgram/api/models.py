@@ -96,12 +96,10 @@ class Recipe(models.Model):
         validators=[
             MinValueValidator(
                 1,
-                message=(
-                    'Минимальное время приготовления в минутах: '
-                    '1'
-                )
+                message='Время приготовления минимум 1 минута'
             )
-        ]
+        ],
+        help_text='Время приготовления',
     )
 
     class Meta:
