@@ -7,7 +7,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from api.serializers import SubscribeSerializer, SubscribeUserSerializer
-from users.models import Subscribe
+from users.models import Subscribe, User
 from users.pagination import CustomPagination
 from users.serializers import CustomUserSerializer
 
@@ -55,8 +55,7 @@ class SubscriptionsList(viewsets.GenericViewSet):
     permission_classes = [IsAuthenticated]
 
     def list(self, request):
-        queryset = Subscribe.objects.filter(
-            author__user=request.user)
+        queryset = User.objects.filter(author__user=request.user)
         pages = self.paginate_queryset(queryset)
         serializer = SubscribeSerializer(
             pages,
