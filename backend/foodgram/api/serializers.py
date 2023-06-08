@@ -139,9 +139,10 @@ class RecipeWriteSerializer(serializers.ModelSerializer):
         if tags is not None:
             instance.tags.set(tags)
         ingredients = validated_data.pop('ingredients', None)
+        amount = validated_data.pop('amount', None)
         if ingredients is not None:
             instance.ingredients.clear()
-            self.create_ingredients(instance, tags, ingredients)
+            self.create_ingredients(instance, ingredients, amount)
         return super().update(instance, validated_data)
 
     def to_representation(self, instance):
