@@ -57,4 +57,4 @@ class SubscriptionsList(generics.ListAPIView):
     pagination_class = [CustomPagination]
 
     def get_queryset(self):
-        return Subscribe.objects.filter(user=self.request.user)
+        return self.request.user.subscriber.all()
