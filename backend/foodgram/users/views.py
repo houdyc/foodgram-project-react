@@ -55,5 +55,6 @@ class SubscriptionsList(mixins.ListModelMixin, viewsets.GenericViewSet):
     serializer_class = SubscribeSerializer
     permission_classes = [IsAuthenticated]
 
+    @action(detail=False, pagination_class=CustomPagination)
     def get_queryset(self):
         return Subscribe.objects.filter(user=self.request.user)
