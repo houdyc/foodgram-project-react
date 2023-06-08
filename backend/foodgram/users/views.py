@@ -52,19 +52,20 @@ class SubscribeView(APIView):
 
 
 class SubscriptionsList(UserViewSet):
+    queryset = User.objects.all()
     serializer_class = SubscribeSerializer
     permission_classes = [IsAuthenticated]
     pagination_class = CustomPagination
 
-    def get_queryset(self):
-        return Subscribe.objects.filter(user=self.request.user)
-
-    @action(detail=False)
+    @action(
+        detail=False,
+        permission_classes=[IsAuthenticated]
+    )
     def subscriptions(self, request):
-        subscriptions_list = self.paginate_queryset(
-            User.objects.filter(following__user=request.user)
-        )
-        serializer = SubscribeSerializer(
-            subscriptions_list, many=True, context={'request': request}
-        )
+        user = request.user
+        queryset = User.objects.filter(subscribing__user=user)
+        pages = self.paginate_queryset(queryset)
+        serializer = SubscribeSerializer(pages,
+                                         many=True,
+                                         context={'request': request})
         return self.get_paginated_response(serializer.data)
