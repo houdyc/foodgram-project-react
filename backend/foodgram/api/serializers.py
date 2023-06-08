@@ -114,7 +114,8 @@ class RecipeWriteSerializer(serializers.ModelSerializer):
         return obj
 
     def validate_cooking_time(self, obj):
-        if obj.cooking_time <= 0:
+        recipe = obj
+        if recipe.cooking_time <= 0:
             raise serializers.ValidationError(
                 'Время приготовления должно быть больше 0!'
             )
