@@ -7,7 +7,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from api.serializers import SubscribeSerializer, SubscribeUserSerializer
-from users.models import Subscribe
+from users.models import Subscribe, User
 from users.pagination import CustomPagination
 from users.serializers import CustomUserSerializer
 
@@ -52,9 +52,26 @@ class SubscribeView(APIView):
 
 
 class SubscriptionsList(UserViewSet):
-    serializer_class = SubscribeSerializer
+    queryset = User.objects.all()
+    serializer_class = CustomUserSerializer
     permission_classes = [IsAuthenticated]
     pagination_class = CustomPagination
 
-    def get_queryset(self):
-        return Subscribe.objects.filter(user=self.request.user)
+    @action(
+        url_path='subscriptions',
+        methods=['get'],
+        detail=False,
+        permission_classes=(IsAuthenticated,),
+    )
+    def get_subscriptions(self, response):
+        limit = self.request.query_params.get('recipes_limit')
+        pages = self.paginate_queryset(
+            User.objects.filter(author__user=self.request.user)
+        )
+        serializer = SubscribeSerializer(pages, many=True)
+        if limit:
+            for user in serializer.data:
+                if user.get('recipes'):
+                    user['recipes'] = user.get('recipes')[:int(limit)]
+
+        return self.get_paginated_response(serializer.data)
