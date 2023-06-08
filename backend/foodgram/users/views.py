@@ -56,7 +56,7 @@ class SubscriptionsList(viewsets.GenericViewSet):
 
     def list(self, request):
         queryset = Subscribe.objects.filter(
-            subscribing__subscriber=request.user)
+            author__user=request.user)
         pages = self.paginate_queryset(queryset)
         serializer = SubscribeSerializer(
             pages,
