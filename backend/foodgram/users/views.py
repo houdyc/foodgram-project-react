@@ -52,7 +52,6 @@ class SubscribeView(APIView):
 
 
 class SubscriptionsList(viewsets.GenericViewSet):
-    serializer_class = SubscribeSerializer
     permission_classes = [IsAuthenticated]
 
     def list(self, request):
