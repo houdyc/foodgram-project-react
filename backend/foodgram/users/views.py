@@ -52,10 +52,12 @@ class SubscribeView(APIView):
 
 
 class SubscriptionsList(UserViewSet):
-    queryset = User.objects.all()
     serializer_class = SubscribeSerializer
     permission_classes = [IsAuthenticated]
     pagination_class = CustomPagination
+
+    def get_queryset(self):
+        return Subscribe.objects.filter(user=self.request.user)
 
     @action(
         detail=False,
