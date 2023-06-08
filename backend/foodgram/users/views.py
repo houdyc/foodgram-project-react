@@ -1,9 +1,10 @@
 from django.shortcuts import get_object_or_404
 from djoser.views import UserViewSet
-from rest_framework import status
+from rest_framework import mixins, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
+from rest_framework.views import APIView
 
 from api.serializers import SubscribeSerializer, SubscribeUserSerializer
 from users.models import Subscribe
@@ -31,6 +32,10 @@ class UsersViewSet(UserViewSet):
         serializer.is_valid(raise_exception=True)
         return Response(serializer.data)
 
+
+class SubscribeView(APIView):
+    permission_classes = [IsAuthenticated]
+
     def post(self, request, user_id):
         serializer = SubscribeUserSerializer(
             data={'user': request.user.id, 'author': user_id}
@@ -45,16 +50,10 @@ class UsersViewSet(UserViewSet):
         follow.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
-    @action(
-        methods=['GET'],
-        detail=False,
-        permission_classes=(IsAuthenticated,)
-    )
-    def subscriptions(self, request):
-        user = self.request.user
-        queryset = Subscribe.objects.filter(user=user)
-        page = self.paginate_queryset(queryset)
-        serializer = SubscribeSerializer(
-            page, many=True, context={'request': request}
-        )
-        return self.get_paginated_response(serializer.data)
+
+class SubscriptionsList(mixins.ListModelMixin, viewsets.GenericViewSet):
+    serializer_class = SubscribeSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        return Subscribe.objects.filter(user=self.request.user)
