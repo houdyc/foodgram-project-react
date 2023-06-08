@@ -56,9 +56,6 @@ class SubscriptionsList(mixins.ListModelMixin, viewsets.GenericViewSet):
     permission_classes = [IsAuthenticated]
     pagination_class = CustomPagination
 
-    def get_queryset(self):
-        return Subscribe.objects.filter(user=self.request.user)
-
     @action(['get'],
             detail=False,
             )
