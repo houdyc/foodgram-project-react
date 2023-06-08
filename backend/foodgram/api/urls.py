@@ -10,11 +10,9 @@ router = DefaultRouter()
 router.register('ingredients', IngredientViewSet)
 router.register('recipes', RecipeViewSet)
 router.register('tags', TagViewSet)
+router.register('users/subscriptions', SubscriptionsList)
+router.register(r'users/(?P<user_id>\d+)/subscribe', SubscribeView)
 
 urlpatterns = [
-    path(r'users/subscriptions/', SubscriptionsList.as_view({'get': 'list'}),
-         name='subscriptions'),
-    path(r'users/<int:user_id>/subscribe/', SubscribeView.as_view(),
-         name='subscribe'),
     path('', include(router.urls))
 ]
