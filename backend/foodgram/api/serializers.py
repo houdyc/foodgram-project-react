@@ -197,6 +197,10 @@ class SubscribeSerializer(serializers.ModelSerializer):
     def get_recipes_count(self, obj):
         return Recipe.objects.filter(author=obj.author).count()
 
+    def to_representation(self, instance):
+        recipe = self.get_recipes_count(Recipe)[:3]
+        return recipe
+
 
 class SubscribeUserSerializer(serializers.ModelSerializer):
     class Meta:
