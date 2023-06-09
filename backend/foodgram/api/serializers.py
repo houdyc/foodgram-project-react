@@ -193,11 +193,11 @@ class SubscribeSerializer(serializers.ModelSerializer):
         return Subscribe.objects.filter(author=obj.author, user=obj.user
                                         ).exists()
 
-    def get_recipes(self, obj):
+    def get_recipes(self):
         recipes_limit = self.context['request'].query_params.get(
             'recipes_limit', 3
         )
-        recipes_to_show = obj.recipes.all()[:int(recipes_limit)]
+        recipes_to_show = self.recipes[:int(recipes_limit)]
         serializer = RecipeShortSerializer(recipes_to_show, many=True)
         return serializer.data
 
