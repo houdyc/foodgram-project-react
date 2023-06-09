@@ -52,8 +52,8 @@ class SubscribeView(APIView):
 
 
 class SubscriptionsList(UserViewSet):
-    queryset = Subscribe.objects.all()
-    serializer_class = SubscribeSerializer
+    queryset = User.objects.all()
+    serializer_class = CustomUserSerializer
     permission_classes = [IsAuthenticated]
     pagination_class = CustomPagination
 
