@@ -180,7 +180,7 @@ class SubscribeSerializer(serializers.ModelSerializer):
     first_name = serializers.ReadOnlyField(source='author.first_name')
     last_name = serializers.ReadOnlyField(source='author.last_name')
     is_subscribed = serializers.SerializerMethodField()
-    recipes = RecipeShortSerializer(many=True, source='author.recipes')
+    recipes = RecipeShortSerializer(many=True, source='author.recipes'[:3])
     recipes_count = serializers.SerializerMethodField()
 
     class Meta:
