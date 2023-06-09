@@ -196,6 +196,15 @@ class SubscribeSerializer(serializers.ModelSerializer):
     def get_recipes_count(self, obj):
         return Recipe.objects.filter(author=obj.author).count()
 
+    def to_representation(self, instance):
+        limit = self.context['request'].query_params.get(
+            'recipes_limit', 3
+        )
+        recipes_to_show = instance.recipes.all()[:int(limit)]
+        request = self.context.get('request')
+        serializer = SubscribeSerializer(request, recipes_to_show)
+        return serializer.data
+
 
 class SubscribeUserSerializer(serializers.ModelSerializer):
     class Meta:
@@ -217,13 +226,10 @@ class SubscribeUserSerializer(serializers.ModelSerializer):
         return data
 
     def to_representation(self, instance):
-        limit = self.context['request'].query_params.get(
-            'recipes_limit', 3
-        )
-        recipes_to_show = instance.recipes.all()[:int(limit)]
         request = self.context.get('request')
-        serializer = SubscribeSerializer(request, recipes_to_show)
-        return serializer.data
+        return SubscribeSerializer(
+            instance, context={'request': request}
+        ).data
 
 
 class FavoriteSerializer(serializers.ModelSerializer):
