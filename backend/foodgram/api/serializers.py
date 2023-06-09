@@ -194,12 +194,12 @@ class SubscribeSerializer(serializers.ModelSerializer):
                                         ).exists()
 
     def get_recipes(self, obj):
-        request = self.context.get('request')
-        limit = request.GET.get('recipes_limit')
-        queryset = obj.author.recipes.all()
-        if limit:
-            queryset = queryset[: int(limit)]
-        return RecipeShortSerializer(queryset, many=True).data
+        recipes_limit = self.context['request'].query_params.get(
+            'recipes_limit', 3
+        )
+        recipes_to_show = obj.recipes.all()[:int(recipes_limit)]
+        serializer = RecipeShortSerializer(recipes_to_show, many=True)
+        return serializer.data
 
     def get_recipes_count(self, obj):
         return Recipe.objects.filter(author=obj.author).count()
