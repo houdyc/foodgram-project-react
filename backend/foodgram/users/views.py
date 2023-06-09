@@ -60,7 +60,7 @@ class SubscriptionsList(mixins.ListModelMixin, viewsets.GenericViewSet):
     def get_subscriptions(self, response):
         limit = self.request.query_params.get('recipes_limit')
         pages = self.paginate_queryset(
-            User.objects.filter(author__user=self.request.user)
+            User.objects.filter(subscribing__subscriber=self.request.user)
         )
         serializer = SubscribeSerializer(pages, many=True)
         if limit:
