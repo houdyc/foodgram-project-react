@@ -57,12 +57,4 @@ class SubscriptionsList(mixins.ListModelMixin, viewsets.GenericViewSet):
     pagination_class = CustomPagination
 
     def get_queryset(self):
-        limit = self.request.query_params.get('recipes_limit')
-        recipes = self.paginate_queryset(
-            Subscribe.objects.filter(user=self.request.user))
-        serializer = SubscribeSerializer(recipes, many=True)
-        if limit:
-            for user in serializer.data:
-                if user.get('recipes'):
-                    user['recipes'] = user.get('recipes')[:int(limit)]
-        return self.get_paginated_response(serializer.data)
+        return Subscribe.objects.filter(user=self.request.user)

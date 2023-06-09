@@ -217,10 +217,13 @@ class SubscribeUserSerializer(serializers.ModelSerializer):
         return data
 
     def to_representation(self, instance):
+        limit = self.context['request'].query_params.get(
+            'recipes_limit', 3
+        )
+        recipes_to_show = instance.recipes.all()[:int(limit)]
         request = self.context.get('request')
-        return SubscribeSerializer(
-            instance, context={'request': request}
-        ).data
+        serializer = SubscribeSerializer(request, recipes_to_show)
+        return serializer.data
 
 
 class FavoriteSerializer(serializers.ModelSerializer):
