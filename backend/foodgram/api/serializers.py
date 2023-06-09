@@ -179,11 +179,11 @@ class SubscribeSerializer(serializers.ModelSerializer):
     first_name = serializers.ReadOnlyField(source='author.first_name')
     last_name = serializers.ReadOnlyField(source='author.last_name')
     is_subscribed = serializers.SerializerMethodField()
-    recipes = RecipeShortSerializer(many=True, source='author.recipes')
+    recipes = serializers.SerializerMethodField()
     recipes_count = serializers.SerializerMethodField()
 
     class Meta:
-        model = User
+        model = Subscribe
         fields = (
             'email', 'id', 'username', 'first_name', 'last_name',
             'is_subscribed', 'recipes', 'recipes_count'
@@ -192,6 +192,14 @@ class SubscribeSerializer(serializers.ModelSerializer):
     def get_is_subscribed(self, obj):
         return Subscribe.objects.filter(author=obj.author, user=obj.user
                                         ).exists()
+
+    def get_recipes(self, obj):
+        request = self.context.get('request')
+        limit = request.GET.get('recipes_limit')
+        queryset = Recipe.objects.filter(author=obj.author)
+        if limit:
+            queryset = queryset[:int(limit)]
+        return RecipeShortSerializer(queryset, many=True).data
 
     def get_recipes_count(self, obj):
         return Recipe.objects.filter(author=obj.author).count()
@@ -218,15 +226,9 @@ class SubscribeUserSerializer(serializers.ModelSerializer):
 
     def to_representation(self, instance):
         request = self.context.get('request')
-        limit = request.GET.get("recipes_limit")
-        recipes = SubscribeSerializer.recipes
-        if limit:
-            try:
-                recipes = recipes[:int(limit)]
-            except ValueError:
-                raise ValueError('Неверно задан параметр количества рецептов')
-        return RecipeShortSerializer(recipes,
-                                     context={'request': request}).data
+        return SubscribeSerializer(
+            instance, context={'request': request}
+        ).data
 
 
 class FavoriteSerializer(serializers.ModelSerializer):
