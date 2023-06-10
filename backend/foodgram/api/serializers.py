@@ -65,16 +65,12 @@ class RecipeIngredientsSerializer(serializers.ModelSerializer):
 
 
 class IngredientAmountSerializer(serializers.ModelSerializer):
-    id = serializers.ReadOnlyField(source='ingredient.id')
-    name = serializers.ReadOnlyField(source='ingredient.name')
-    measurement_unit = serializers.ReadOnlyField(
-        source='ingredient.measurement_unit',
-    )
-    amount = serializers.IntegerField(source='ingredientrecipe.amount')
+    id = IntegerField()
+    amount = IntegerField()
 
     class Meta:
-        model = IngredientRecipe
-        fields = ('id', 'name', 'measurement_unit', 'amount')
+        model = Ingredient
+        fields = ('id', 'amount')
 
     def validate_amount(self, data):
         if int(data) < 1:
