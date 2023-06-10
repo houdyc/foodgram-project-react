@@ -26,8 +26,7 @@ class IngredientSerializer(serializers.ModelSerializer):
 
 
 class RecipeIngredientsSerializer(serializers.ModelSerializer):
-    amount = serializers.SerializerMethodField(
-        source='ingredientrecipe.amount')
+    amount = serializers.IntegerField()
 
     class Meta:
         model = Ingredient
