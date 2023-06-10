@@ -64,9 +64,13 @@ class RecipeSerializer(serializers.ModelSerializer):
         return ShoppingList.objects.filter(user=user, recipe=obj).exists()
 
 
-class IngredientWriteSerializer(IngredientAmountSerializer):
-    id = serializers.IntegerField(write_only=True)
-    amount = serializers.IntegerField(write_only=True)
+class IngredientWriteSerializer(serializers.ModelSerializer):
+    id = serializers.IntegerField()
+    amount = serializers.IntegerField()
+
+    class Meta:
+        model = Ingredient
+        fields = ('id', 'amount')
 
 
 class RecipeWriteSerializer(serializers.ModelSerializer):
