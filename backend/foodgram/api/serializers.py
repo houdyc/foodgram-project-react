@@ -53,21 +53,12 @@ class RecipeSerializer(serializers.ModelSerializer):
 
 
 class IngredientWriteSerializer(serializers.ModelSerializer):
-    id = serializers.PrimaryKeyRelatedField(
-        queryset=Ingredient.objects.all()
-    )
+    id = serializers.IntegerField()
+    amount = serializers.IntegerField()
 
     class Meta:
-        model = IngredientRecipe
+        model = Ingredient
         fields = ('id', 'amount')
-
-    def validate_amount(self, data):
-        if int(data) < 1:
-            raise serializers.ValidationError({
-                'ingredients': 'Количество должно быть больше 1',
-                'msg': data
-            })
-        return data
 
 
 class RecipeWriteSerializer(serializers.ModelSerializer):
@@ -92,6 +83,11 @@ class RecipeWriteSerializer(serializers.ModelSerializer):
                 raise serializers.ValidationError(
                     'Ингредиенты не могут дублироваться.'
                 )
+        if int(obj) < 1:
+            raise serializers.ValidationError({
+                'ingredients': 'Количество должно быть больше 1',
+                'msg': obj
+            })
         return obj
 
     def validate_cooking_time(self, obj):
