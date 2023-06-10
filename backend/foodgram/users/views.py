@@ -7,7 +7,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from api.serializers import SubscribeSerializer, SubscribeUserSerializer
-from users.models import Subscribe
+from users.models import Subscribe, User
 from users.pagination import CustomPagination
 from users.serializers import CustomUserSerializer
 
@@ -37,18 +37,29 @@ class SubscribeView(APIView):
     permission_classes = [IsAuthenticated]
 
     def post(self, request, user_id):
+        author = get_object_or_404(User, id=user_id)
+        if self.request.user == author or Subscribe.objects.filter(
+                user=request.user, author=user_id).exists():
+            return Response(
+                {'error': 'Вы пытаетесь подписаться на самого '
+                 'себя или уже подписаны на этого автора'},
+                status=status.HTTP_400_BAD_REQUEST)
+        subscription = Subscribe.objects.create(
+            author=author, user=self.request.user)
         serializer = SubscribeUserSerializer(
-            data={'user': request.user.id, 'author': user_id}
-        )
-        serializer.is_valid(raise_exception=True)
-        serializer.save()
-        return Response(data=serializer.data, status=status.HTTP_201_CREATED)
+            subscription, context={'request': request})
+
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
 
     def delete(self, request, user_id):
-        follow = get_object_or_404(Subscribe, author=user_id,
-                                   user=request.user)
-        follow.delete()
-        return Response(status=status.HTTP_204_NO_CONTENT)
+        subscription = Subscribe.objects.filter(
+            user=request.user, author=user_id)
+        if subscription.exists():
+            subscription.delete()
+            return Response({'message': 'Подписка успешно удалена'},
+                            status=status.HTTP_204_NO_CONTENT)
+        return Response({'message': 'У вас не было такой подписки'},
+                        status=status.HTTP_400_BAD_REQUEST)
 
 
 class SubscriptionsList(mixins.ListModelMixin, viewsets.GenericViewSet):
