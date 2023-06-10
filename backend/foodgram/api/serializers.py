@@ -86,16 +86,33 @@ class RecipeWriteSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
     def validate_ingredients(self, obj):
-        if not obj:
+        if obj is None:
             raise serializers.ValidationError(
-                'В рецепте не может быть 0 ингредиентов.'
+                'Список ингредиентов отсутствует.'
             )
-        ingredients = [item['id'] for item in obj]
-        for ingredient in ingredients:
-            if ingredients.count(ingredient) > 1:
+
+        if len(obj) == 0:
+            raise serializers.ValidationError(
+                'Список ингредиентов пуст.'
+            )
+
+        id_ingredients = [ingredient.get('id') for ingredient in obj]
+        if len(set(id_ingredients)) < len(id_ingredients):
+            raise serializers.ValidationError(
+                'Выбрано два одинаковых ингредиента.'
+            )
+
+        for ingredient in obj:
+            amount = ingredient.get('amount')
+            if isinstance(amount, str) and not amount.isdigit():
                 raise serializers.ValidationError(
-                    'Ингредиенты не могут дублироваться.'
+                    'Количество ингредиентов должно быть положительным числом.'
                 )
+            if int(ingredient.get('amount')) <= 0:
+                raise serializers.ValidationError(
+                    'Количество ингредиентов не может быть меньше/равно нулю.'
+                )
+
         return obj
 
     def validate_cooking_time(self, obj):
