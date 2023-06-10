@@ -85,20 +85,11 @@ class IngredientAmountSerializer(serializers.ModelSerializer):
         return data
 
 
-class IngredientWriteSerializer(IngredientAmountSerializer):
-    id = serializers.IntegerField(write_only=True)
-    amount = serializers.IntegerField(write_only=True)
-
-    class Meta:
-        model = IngredientRecipe
-        fields = ('id', 'amount')
-
-
 class RecipeWriteSerializer(serializers.ModelSerializer):
     author = CustomUserSerializer(read_only=True)
     tags = PrimaryKeyRelatedField(queryset=Tag.objects.all(), many=True)
     image = Base64ImageField(max_length=None, use_url=True)
-    ingredients = IngredientWriteSerializer(many=True)
+    ingredients = IngredientAmountSerializer(many=True)
     cooking_time = IntegerField()
 
     class Meta:
