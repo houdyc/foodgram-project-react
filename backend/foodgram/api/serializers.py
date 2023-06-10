@@ -86,7 +86,6 @@ class IngredientAmountSerializer(serializers.ModelSerializer):
 
 class IngredientWriteSerializer(IngredientAmountSerializer):
     id = serializers.IntegerField(write_only=True, source='ingredient.id')
-    amount = serializers.IntegerField(write_only=True)
 
     class Meta:
         model = IngredientRecipe
