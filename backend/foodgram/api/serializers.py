@@ -65,12 +65,15 @@ class RecipeIngredientsSerializer(serializers.ModelSerializer):
 
 
 class IngredientAmountSerializer(serializers.ModelSerializer):
-    id = IntegerField()
-    amount = IntegerField()
+    id = serializers.ReadOnlyField(source='ingredient.id')
+    name = serializers.ReadOnlyField(source='ingredient.name')
+    measurement_unit = serializers.ReadOnlyField(
+        source='ingredient.measurement_unit',
+    )
 
     class Meta:
-        model = Ingredient
-        fields = ('id', 'amount')
+        model = IngredientRecipe
+        fields = ('id', 'name', 'measurement_unit', 'amount')
 
     def validate_amount(self, data):
         if int(data) < 1:
@@ -81,11 +84,20 @@ class IngredientAmountSerializer(serializers.ModelSerializer):
         return data
 
 
+class IngredientWriteSerializer(IngredientAmountSerializer):
+    id = serializers.IntegerField(write_only=True, source='ingredient.id')
+    amount = serializers.IntegerField(write_only=True)
+
+    class Meta:
+        model = IngredientRecipe
+        fields = ('id', 'amount')
+
+
 class RecipeWriteSerializer(serializers.ModelSerializer):
     author = CustomUserSerializer(read_only=True)
     tags = PrimaryKeyRelatedField(queryset=Tag.objects.all(), many=True)
     image = Base64ImageField(max_length=None, use_url=True)
-    ingredients = IngredientAmountSerializer(many=True)
+    ingredients = IngredientWriteSerializer(many=True)
     cooking_time = IntegerField()
 
     class Meta:
