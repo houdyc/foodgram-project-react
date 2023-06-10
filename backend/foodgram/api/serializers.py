@@ -40,7 +40,8 @@ class IngredientAmountSerializer(serializers.ModelSerializer):
 class RecipeSerializer(serializers.ModelSerializer):
     image = Base64ImageField()
     author = CustomUserSerializer(default=serializers.CurrentUserDefault())
-    ingredients = IngredientSerializer(many=True)
+    ingredients = IngredientSerializer(many=True, read_only=True,
+                                       source='ingredientrecipe')
     tags = TagSerializer(many=True)
     is_favorited = serializers.SerializerMethodField()
     is_in_shopping_cart = serializers.SerializerMethodField()
@@ -95,7 +96,7 @@ class RecipeWriteSerializer(serializers.ModelSerializer):
                 raise serializers.ValidationError(
                     'Ингредиенты не могут дублироваться.'
                 )
-        if int(obj) < 1:
+        if not obj > 0:
             raise serializers.ValidationError({
                 'ingredients': 'Количество должно быть больше 1',
                 'msg': obj
