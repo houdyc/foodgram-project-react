@@ -36,19 +36,11 @@ class IngredientAmountSerializer(serializers.ModelSerializer):
         model = IngredientRecipe
         fields = ('id', 'name', 'measurement_unit', 'amount')
 
-    def validate_amount(self, data):
-        if int(data) < 1:
-            raise serializers.ValidationError({
-                'ingredients': 'Количество должно быть больше 1',
-                'msg': data
-            })
-        return data
-
 
 class RecipeSerializer(serializers.ModelSerializer):
     image = Base64ImageField()
     author = CustomUserSerializer(default=serializers.CurrentUserDefault())
-    ingredients = IngredientAmountSerializer(many=True, source='ingredients')
+    ingredients = IngredientAmountSerializer(many=True)
     tags = TagSerializer(many=True)
     is_favorited = serializers.SerializerMethodField()
     is_in_shopping_cart = serializers.SerializerMethodField()
@@ -99,6 +91,11 @@ class RecipeWriteSerializer(serializers.ModelSerializer):
                 raise serializers.ValidationError(
                     'Ингредиенты не могут дублироваться.'
                 )
+        if int(obj) < 1:
+            raise serializers.ValidationError({
+                'ingredients': 'Количество должно быть больше 1',
+                'msg': obj
+            })
         return obj
 
     def validate_cooking_time(self, obj):
