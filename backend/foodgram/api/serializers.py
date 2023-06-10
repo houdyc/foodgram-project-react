@@ -25,10 +25,22 @@ class IngredientSerializer(serializers.ModelSerializer):
         fields = ('id', 'name', 'measurement_unit')
 
 
+class IngredientAmountSerializer(serializers.ModelSerializer):
+    id = serializers.ReadOnlyField(source='ingredient.id')
+    name = serializers.ReadOnlyField(source='ingredient.name')
+    measurement_unit = serializers.ReadOnlyField(
+        source='ingredient.measurement_unit',
+    )
+
+    class Meta:
+        model = IngredientRecipe
+        fields = ('id', 'name', 'measurement_unit', 'amount')
+
+
 class RecipeSerializer(serializers.ModelSerializer):
     image = Base64ImageField()
     author = CustomUserSerializer(default=serializers.CurrentUserDefault())
-    ingredients = IngredientSerializer(many=True)
+    ingredients = IngredientAmountSerializer(many=True)
     tags = TagSerializer(many=True)
     is_favorited = serializers.SerializerMethodField()
     is_in_shopping_cart = serializers.SerializerMethodField()
@@ -53,11 +65,12 @@ class RecipeSerializer(serializers.ModelSerializer):
 
 
 class IngredientWriteSerializer(serializers.ModelSerializer):
-    id = serializers.IntegerField()
-    amount = serializers.IntegerField()
+    id = serializers.PrimaryKeyRelatedField(
+        queryset=Ingredient.objects.all()
+    )
 
     class Meta:
-        model = Ingredient
+        model = IngredientRecipe
         fields = ('id', 'amount')
 
 
