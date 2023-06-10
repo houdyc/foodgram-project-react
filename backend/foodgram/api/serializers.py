@@ -25,11 +25,11 @@ class IngredientSerializer(serializers.ModelSerializer):
         fields = ('id', 'name', 'measurement_unit')
 
 
-class IngredientAmountSerializer(serializers.ModelSerializer):
-    id = serializers.ReadOnlyField(source='ingredient.id')
-    name = serializers.ReadOnlyField(source='ingredient.name')
-    measurement_unit = serializers.ReadOnlyField(
-        source='ingredient.measurement_unit',
+class RecipeIngredientsSerializer(serializers.ModelSerializer):
+    id = serializers.SerializerMethodField(source='ingredient.id')
+    name = serializers.SerializerMethodField(source='ingredient.name')
+    measurement_unit = serializers.SerializerMethodField(
+        source='ingredient.measurement_unit'
     )
 
     class Meta:
@@ -40,8 +40,9 @@ class IngredientAmountSerializer(serializers.ModelSerializer):
 class RecipeSerializer(serializers.ModelSerializer):
     image = Base64ImageField()
     author = CustomUserSerializer(default=serializers.CurrentUserDefault())
-    ingredients = IngredientSerializer(many=True, read_only=True,
-                                       source='ingredientrecipe')
+    ingredients = RecipeIngredientsSerializer(many=True,
+                                              source='ingredientrecipe',
+                                              read_only=True)
     tags = TagSerializer(many=True)
     is_favorited = serializers.SerializerMethodField()
     is_in_shopping_cart = serializers.SerializerMethodField()
@@ -66,11 +67,10 @@ class RecipeSerializer(serializers.ModelSerializer):
 
 
 class IngredientWriteSerializer(serializers.ModelSerializer):
-    id = serializers.IntegerField()
-    amount = serializers.IntegerField()
+    id = serializers.IntegerField(write_only=True)
 
     class Meta:
-        model = Ingredient
+        model = IngredientRecipe
         fields = ('id', 'amount')
 
 
@@ -92,16 +92,10 @@ class RecipeWriteSerializer(serializers.ModelSerializer):
             )
         ingredients = [item['id'] for item in obj]
         for ingredient in ingredients:
-            amount = ingredient.get('amount')
             if ingredients.count(ingredient) > 1:
                 raise serializers.ValidationError(
                     'Ингредиенты не могут дублироваться.'
                 )
-            if not amount > 0:
-                raise serializers.ValidationError({
-                    'ingredients': 'Количество должно быть больше 1',
-                    'msg': amount
-                })
         return obj
 
     def validate_cooking_time(self, obj):
