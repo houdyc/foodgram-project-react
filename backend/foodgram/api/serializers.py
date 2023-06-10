@@ -92,15 +92,16 @@ class RecipeWriteSerializer(serializers.ModelSerializer):
             )
         ingredients = [item['id'] for item in obj]
         for ingredient in ingredients:
+            amount = ingredient.get('amount')
             if ingredients.count(ingredient) > 1:
                 raise serializers.ValidationError(
                     'Ингредиенты не могут дублироваться.'
                 )
-        if not obj > 0:
-            raise serializers.ValidationError({
-                'ingredients': 'Количество должно быть больше 1',
-                'msg': obj
-            })
+            if not amount > 0:
+                raise serializers.ValidationError({
+                    'ingredients': 'Количество должно быть больше 1',
+                    'msg': amount
+                })
         return obj
 
     def validate_cooking_time(self, obj):
