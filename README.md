@@ -59,15 +59,3 @@ docker-compose exec backend python manage.py load_ingredients
 
 ## Документация
 Документация будет доступна по эндпоинту /redoc/.
-
-### IP сервера 
-```
-51.250.91.186
-```
-
-### SuperUser для теста админки
-
-```
-login: reviewer
-pass: test123456789
-```
