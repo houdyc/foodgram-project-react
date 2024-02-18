@@ -1,3 +1,6 @@
+## Автор:
+Даниил (https://github.com/loren166) Афанасьев
+
 # Foodgram-project
 ![example workflow](https://github.com/loren166/foodgram-project-react/actions/workflows/foodgram_workflow.yml/badge.svg)
 
